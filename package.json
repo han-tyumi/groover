@@ -1,0 +1,24 @@
+{
+  "name": "groover",
+  "version": "1.0.0",
+  "description": "Create playlists with friends.",
+  "main": "index.js",
+  "repository": "https://github.com/han-tyumi/groover.git",
+  "author": "han-tyumi <mmchamp95@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "next",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "^9.2.0",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0"
+  },
+  "devDependencies": {
+    "@types/node": "^13.1.7",
+    "@types/react": "^16.9.17",
+    "typescript": "^3.7.4"
+  }
+}

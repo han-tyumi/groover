@@ -1,0 +1,10 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  },
+  "npm.packageManager": "yarn",
+  "prettier.packageManager": "yarn",
+  "tslint.packageManager": "yarn"
+}
