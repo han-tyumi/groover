@@ -1,5 +1,8 @@
 import { FunctionComponent } from 'react';
+import SignIn from '../components/SignIn';
 
-const Home: FunctionComponent = () => <p>Stay tuned for something big.</p>;
+const Index: FunctionComponent = () => {
+  return <SignIn />;
+};
 
-export default Home;
+export default Index;
