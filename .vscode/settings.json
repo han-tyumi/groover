@@ -6,5 +6,6 @@
   },
   "npm.packageManager": "yarn",
   "prettier.packageManager": "yarn",
-  "tslint.packageManager": "yarn"
+  "tslint.packageManager": "yarn",
+  "cSpell.words": ["SPOTIFY"]
 }
