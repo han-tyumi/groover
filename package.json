@@ -2,20 +2,33 @@
   "name": "groover",
   "version": "1.0.0",
   "description": "Create playlists with friends.",
-  "main": "index.js",
   "repository": "https://github.com/han-tyumi/groover.git",
   "author": "han-tyumi <mmchamp95@gmail.com>",
   "license": "MIT",
+  "engines": {
+    "node": "10"
+  },
   "scripts": {
-    "dev": "next",
-    "build": "next build",
-    "start": "next start -p $PORT",
-    "heroku-postbuild": "yarn build"
+    "dev": "next src/app",
+    "preserve": "yarn clean && yarn build-public && yarn build-functions && yarn build-app && yarn copy-deps && yarn install-deps",
+    "serve": "cross-env NODE_ENV=production firebase serve",
+    "deploy": "cross-env NODE_ENV=production firebase deploy",
+    "clean": "rimraf \"dist/functions\" && rimraf \"dist/public\"",
+    "build-app": "next build \"src/app\"",
+    "build-public": "cpx \"src/public/**/*.*\" \"dist/public\" -C",
+    "build-functions": "tsc --project src/functions",
+    "lint-app": "tslint --project src/app",
+    "typecheck-app": "tsc --project src/app",
+    "lint-functions": "tslint --project src/functions",
+    "copy-deps": "cpx \"*{package.json,package-lock.json,yarn.lock}\" \"dist/functions\" -C",
+    "install-deps": "cd \"dist/functions\" && yarn"
   },
   "dependencies": {
     "@material-ui/core": "^4.8.3",
     "@material-ui/icons": "^4.5.1",
     "dotenv": "^8.2.0",
+    "firebase-admin": "^8.9.1",
+    "firebase-functions": "^3.3.0",
     "isomorphic-unfetch": "^3.0.0",
     "next": "^9.2.0",
     "react": "^16.12.0",
@@ -24,12 +37,17 @@
   "devDependencies": {
     "@types/node": "^13.1.7",
     "@types/react": "^16.9.17",
+    "@types/react-dom": "^16.9.4",
+    "cpx": "^1.5.0",
+    "cross-env": "^6.0.3",
     "husky": ">=1",
     "lint-staged": ">=8",
     "prettier": "^1.19.1",
+    "rimraf": "^3.0.0",
     "tslint": "^5.20.1",
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.1.0",
+    "tslint-react": "^4.1.0",
     "typescript": "^3.7.4"
   },
   "husky": {
