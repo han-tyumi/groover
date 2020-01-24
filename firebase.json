@@ -17,8 +17,17 @@
     ]
   },
   "hosting": {
+    "site": "groover",
     "public": "dist/public",
     "rewrites": [
+      {
+        "source": "/api/authorize",
+        "function": "authorize"
+      },
+      {
+        "source": "/api/authorize-success",
+        "function": "authorizeSuccess"
+      },
       {
         "source": "**/**",
         "function": "nextApp"

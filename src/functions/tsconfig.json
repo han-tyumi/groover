@@ -12,5 +12,6 @@
     "resolveJsonModule": true,
     "isolatedModules": true
   },
+  "include": ["src"],
   "compileOnSave": true
 }

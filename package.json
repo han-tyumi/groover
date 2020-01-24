@@ -5,13 +5,10 @@
   "repository": "https://github.com/han-tyumi/groover.git",
   "author": "han-tyumi <mmchamp95@gmail.com>",
   "license": "MIT",
-  "engines": {
-    "node": "10"
-  },
   "scripts": {
     "dev": "next src/app",
     "preserve": "yarn clean && yarn build-public && yarn build-functions && yarn build-app && yarn copy-deps && yarn install-deps",
-    "serve": "cross-env NODE_ENV=production firebase serve",
+    "serve": "tsc -w -p src/functions | firebase serve",
     "deploy": "cross-env NODE_ENV=production firebase deploy",
     "clean": "rimraf \"dist/functions\" && rimraf \"dist/public\"",
     "build-app": "next build \"src/app\"",
@@ -20,7 +17,7 @@
     "lint-app": "tslint --project src/app",
     "typecheck-app": "tsc --project src/app",
     "lint-functions": "tslint --project src/functions",
-    "copy-deps": "cpx \"*{package.json,package-lock.json,yarn.lock}\" \"dist/functions\" -C",
+    "copy-deps": "jsonmerge package.json functions.json > dist/functions/package.json && cpx \"{package-lock.json,yarn.lock,.env}\" \"dist/functions\" -C",
     "install-deps": "cd \"dist/functions\" && yarn"
   },
   "dependencies": {
@@ -36,11 +33,13 @@
   },
   "devDependencies": {
     "@types/node": "^13.1.7",
+    "@types/node-fetch": "^2.5.4",
     "@types/react": "^16.9.17",
     "@types/react-dom": "^16.9.4",
     "cpx": "^1.5.0",
     "cross-env": "^6.0.3",
     "husky": ">=1",
+    "jsonmerge": "^1.0.0",
     "lint-staged": ">=8",
     "prettier": "^1.19.1",
     "rimraf": "^3.0.0",
