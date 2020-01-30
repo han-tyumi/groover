@@ -1,7 +1,8 @@
-import { CssBaseline, ThemeProvider } from '@material-ui/core';
+import { Box, Container, CssBaseline, ThemeProvider } from '@material-ui/core';
 import App from 'next/app';
 import React from 'react';
-import theme from '../theme';
+
+import theme from '../client/theme';
 
 export default class MyApp extends App {
   public componentDidMount() {
@@ -15,7 +16,16 @@ export default class MyApp extends App {
     return (
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Component {...pageProps} />
+        <Container>
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            marginTop={8}
+          >
+            <Component {...pageProps} />
+          </Box>
+        </Container>
       </ThemeProvider>
     );
   }
