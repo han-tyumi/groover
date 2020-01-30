@@ -1,5 +1,12 @@
+# Packages
 node_modules
+
+# Next.js
 .next
+
+# Environment Variables
 .env
+
+# HTTPS
 localhost.crt
 localhost.key
