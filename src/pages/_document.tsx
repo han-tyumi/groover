@@ -29,6 +29,13 @@ export default class MyDocument extends Document {
     };
   }
 
+  public componentDidMount() {
+    const httpTokens = /^http:\/\/(.*)$/.exec(window.location.href);
+    if (httpTokens) {
+      window.location.replace('https://' + httpTokens[1]);
+    }
+  }
+
   public render() {
     return (
       <Html>
