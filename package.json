@@ -29,10 +29,15 @@
     "@types/node": "^13.1.7",
     "@types/react": "^16.9.17",
     "@types/spotify-web-api-node": "^4.0.1",
+    "@typescript-eslint/eslint-plugin": "^2.18.0",
+    "@typescript-eslint/parser": "^2.18.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "eslint-plugin-react": "^7.18.2",
     "husky": ">=1",
     "lint-staged": ">=8",
     "prettier": "^1.19.1",
-    "tslint": "^5.20.1",
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.1.0",
     "typescript": "^3.7.4"
@@ -44,7 +49,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "tslint --fix",
+      "eslint --fix",
       "git add"
     ],
     "*.{ts,tsx,json,md}": [
