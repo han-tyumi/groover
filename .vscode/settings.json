@@ -7,8 +7,5 @@
   "npm.packageManager": "yarn",
   "prettier.packageManager": "yarn",
   "tslint.packageManager": "yarn",
-  "cSpell.words": ["SPOTIFY"],
-  "typescript.tsdk": ".vscode/pnpify/typescript/lib",
-  "eslint.nodePath": ".vscode/pnpify",
-  "prettier.prettierPath": ".vscode/pnpify/prettier/index.js"
+  "cSpell.words": ["SPOTIFY"]
 }

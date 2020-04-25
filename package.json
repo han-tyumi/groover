@@ -15,7 +15,6 @@
   "dependencies": {
     "@material-ui/core": "^4.8.3",
     "@material-ui/icons": "^4.5.1",
-    "@yarnpkg/pnpify": "^2.0.0-rc.17",
     "dotenv": "^8.2.0",
     "firebase": "^7.7.0",
     "firebase-admin": "^8.9.2",
@@ -36,9 +35,11 @@
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-prettier": "^3.1.2",
     "eslint-plugin-react": "^7.18.2",
-    "husky": "^4.2.1",
-    "lint-staged": "^10.0.7",
+    "husky": ">=1",
+    "lint-staged": ">=8",
     "prettier": "^1.19.1",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-plugin-prettier": "^2.1.0",
     "typescript": "^3.7.4"
   },
   "husky": {

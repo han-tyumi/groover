@@ -1,6 +1,5 @@
-# Yarn
-.yarn/unplugged
-.yarn/build-state.yml
+# Packages
+node_modules
 
 # Next.js
 .next
