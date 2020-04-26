@@ -7,9 +7,9 @@ module.exports = {
     'plugin:react/recommended',
     'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
-    'plugin:prettier/recommended'
+    'plugin:prettier/recommended',
   ],
   rules: {
-    'react/react-in-jsx-scope': false
-  }
+    'react/react-in-jsx-scope': 0,
+  },
 };

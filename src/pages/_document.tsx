@@ -1,21 +1,27 @@
 import { ServerStyleSheets } from '@material-ui/core';
+import { StylesProviderProps } from '@material-ui/styles';
+import { RenderPageResult } from 'next/dist/next-server/lib/utils';
 import Document, {
   DocumentContext,
+  DocumentInitialProps,
   Head,
   Html,
   Main,
-  NextScript
+  NextScript,
 } from 'next/document';
 import React from 'react';
 
 export default class MyDocument extends Document {
-  public static async getInitialProps(ctx: DocumentContext) {
+  public static async getInitialProps(
+    ctx: DocumentContext
+  ): Promise<DocumentInitialProps> {
     const sheets = new ServerStyleSheets();
     const originalRenderPage = ctx.renderPage;
 
-    ctx.renderPage = () =>
+    ctx.renderPage = (): RenderPageResult | Promise<RenderPageResult> =>
       originalRenderPage({
-        enhanceApp: App => props => sheets.collect(<App {...props} />)
+        enhanceApp: (App) => (props): React.ReactElement<StylesProviderProps> =>
+          sheets.collect(<App {...props} />),
       });
 
     const initialProps = await Document.getInitialProps(ctx);
@@ -24,19 +30,19 @@ export default class MyDocument extends Document {
       ...initialProps,
       styles: [
         ...React.Children.toArray(initialProps.styles),
-        sheets.getStyleElement()
-      ]
+        sheets.getStyleElement(),
+      ],
     };
   }
 
-  public componentDidMount() {
+  public componentDidMount(): void {
     const httpTokens = /^http:\/\/(.*)$/.exec(window.location.href);
     if (httpTokens) {
       window.location.replace('https://' + httpTokens[1]);
     }
   }
 
-  public render() {
+  public render(): JSX.Element {
     return (
       <Html>
         <Head>

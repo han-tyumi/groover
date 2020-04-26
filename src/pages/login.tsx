@@ -1,18 +1,14 @@
 import { Box, CircularProgress, Paper, Typography } from '@material-ui/core';
 import { NextPage } from 'next';
+import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
-
 import firebaseApp from '../client/firebase';
 
 const Login: NextPage<{ token?: string }> = ({ token }) => {
   const [status, setStatus] = useState<string>();
   const [error, setError] = useState<string>();
 
-  useEffect(() => {
-    signIn();
-  }, []);
-
-  async function signIn() {
+  async function signIn(): Promise<void> {
     if (token) {
       try {
         await firebaseApp.auth().signInWithCustomToken(token);
@@ -25,6 +21,10 @@ const Login: NextPage<{ token?: string }> = ({ token }) => {
       setStatus('Missing token!');
     }
   }
+
+  useEffect(() => {
+    signIn();
+  }, []);
 
   return (
     <Paper>
@@ -49,7 +49,14 @@ const Login: NextPage<{ token?: string }> = ({ token }) => {
   );
 };
 
-Login.getInitialProps = async ({ query: { token } }) =>
-  typeof token !== 'string' ? { token: undefined } : { token };
+Login.propTypes = {
+  token: PropTypes.string,
+};
+
+Login.getInitialProps = async ({
+  query: { token },
+}): Promise<{
+  token?: string | undefined;
+}> => (typeof token !== 'string' ? { token: undefined } : { token });
 
 export default Login;

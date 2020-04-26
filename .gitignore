@@ -7,6 +7,9 @@ node_modules
 # Environment Variables
 .env
 
+# Firebase
+.firebaserc
+
 # HTTPS
 localhost.crt
 localhost.key

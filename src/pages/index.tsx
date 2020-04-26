@@ -3,21 +3,20 @@ import {
   createStyles,
   Grid,
   makeStyles,
-  Typography
+  Typography,
 } from '@material-ui/core';
 import { NextPage } from 'next';
 import { useEffect, useState } from 'react';
-
 import firebaseApp from '../client/firebase';
 import Login from '../components/Login';
 import User from '../components/User';
 
-const useStyles = makeStyles(theme =>
+const useStyles = makeStyles((theme) =>
   createStyles({
     subtitle: {
       marginTop: -theme.spacing(2),
-      marginLeft: theme.spacing(4)
-    }
+      marginLeft: theme.spacing(4),
+    },
   })
 );
 
@@ -26,8 +25,8 @@ const Index: NextPage = () => {
   const [user, setUser] = useState<firebase.User | null | undefined>();
 
   useEffect(() => {
-    const sub = firebaseApp.auth().onAuthStateChanged(u => setUser(u));
-    return () => sub();
+    const sub = firebaseApp.auth().onAuthStateChanged((u) => setUser(u));
+    return (): void => sub();
   }, []);
 
   return user === undefined ? (
