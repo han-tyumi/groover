@@ -53,10 +53,10 @@ Login.propTypes = {
   token: PropTypes.string,
 };
 
-Login.getInitialProps = async ({
+Login.getInitialProps = ({
   query: { token },
-}): Promise<{
+}): {
   token?: string | undefined;
-}> => (typeof token !== 'string' ? { token: undefined } : { token });
+} => (typeof token !== 'string' ? { token: undefined } : { token });
 
 export default Login;

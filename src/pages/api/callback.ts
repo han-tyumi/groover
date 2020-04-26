@@ -8,7 +8,7 @@ async function createUser(
   photoURL: string,
   email: string,
   accessToken: string,
-  refreshToken: string
+  refreshToken: string,
 ): Promise<string> {
   const uid = `spotify:${spotifyId}`;
   const auth = firebaseAdmin.auth();
@@ -43,12 +43,12 @@ async function createUser(
 
 export default async function (
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ): Promise<void> {
   try {
     if (!req.cookies.state) {
       throw new Error(
-        'State cookie not set or expired. Maybe you took too long to authorize. Please try again.'
+        'State cookie not set or expired. Maybe you took too long to authorize. Please try again.',
       );
     } else if (req.cookies.state !== req.query.state) {
       throw new Error('State validation failed.');
@@ -75,7 +75,7 @@ export default async function (
           images[0].url,
           email,
           accessToken,
-          refreshToken
+          refreshToken,
         );
         res.writeHead(302, { Location: `/login?token=${token}` });
       }

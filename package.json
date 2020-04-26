@@ -8,6 +8,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "node --inspect server.js",
+    "lint": "eslint '*/**/*.{js,jsx,ts,tsx}' --fix",
     "build": "next build",
     "start": "next start -p $PORT",
     "heroku-postbuild": "yarn build"
@@ -51,11 +52,11 @@
     }
   },
   "lint-staged": {
-    "*.{ts,tsx}": [
+    "*.{js,jsx,ts,tsx}": [
       "eslint --fix",
       "git add"
     ],
-    "*.{ts,tsx,json,md}": [
+    "*.{json,md}": [
       "prettier --write",
       "git add"
     ]

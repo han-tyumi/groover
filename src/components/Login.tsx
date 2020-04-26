@@ -3,7 +3,7 @@ import { Spotify } from 'mdi-material-ui';
 import { NextPage } from 'next';
 
 const Login: NextPage = () => {
-  function openLogin() {
+  function openLogin(): void {
     window.open('/api/login', 'login', 'height=585,width=400');
   }
 

@@ -4,10 +4,7 @@ import spotifyApi from '../../server/spotify-api';
 
 const O_AUTH_SCOPES: string[] = ['user-read-email', 'user-read-private'];
 
-export default async function (
-  req: NextApiRequest,
-  res: NextApiResponse
-): Promise<void> {
+export default function (req: NextApiRequest, res: NextApiResponse): void {
   const state = req.cookies.state || crypto.randomBytes(20).toString('hex');
   res
     .writeHead(302, {

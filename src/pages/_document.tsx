@@ -13,7 +13,7 @@ import React from 'react';
 
 export default class MyDocument extends Document {
   public static async getInitialProps(
-    ctx: DocumentContext
+    ctx: DocumentContext,
   ): Promise<DocumentInitialProps> {
     const sheets = new ServerStyleSheets();
     const originalRenderPage = ctx.renderPage;
