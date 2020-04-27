@@ -2,16 +2,18 @@ import { Box, CircularProgress, Paper, Typography } from '@material-ui/core';
 import { NextPage } from 'next';
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
-import firebaseApp from '../client/firebase';
+import { useFirebase } from 'react-redux-firebase';
 
 const Login: NextPage<{ token?: string }> = ({ token }) => {
   const [status, setStatus] = useState<string>();
   const [error, setError] = useState<string>();
 
+  const firebase = useFirebase();
+
   async function signIn(): Promise<void> {
     if (token) {
       try {
-        await firebaseApp.auth().signInWithCustomToken(token);
+        await firebase.login({ token, profile: {} });
         window.close();
       } catch (error) {
         setStatus('Invalid token!');

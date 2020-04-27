@@ -1,7 +1,11 @@
 import { Box, Container, CssBaseline, ThemeProvider } from '@material-ui/core';
 import App from 'next/app';
 import React from 'react';
+import { Provider } from 'react-redux';
+import { ReactReduxFirebaseProvider } from 'react-redux-firebase';
+import { rrfProps } from '../client/firebase';
 import theme from '../client/theme';
+import store from '../store';
 
 export default class MyApp extends App {
   public componentDidMount(): void {
@@ -22,7 +26,11 @@ export default class MyApp extends App {
             alignItems="center"
             marginTop={8}
           >
-            <Component {...pageProps} />
+            <Provider store={store}>
+              <ReactReduxFirebaseProvider {...rrfProps}>
+                <Component {...pageProps} />
+              </ReactReduxFirebaseProvider>
+            </Provider>
           </Box>
         </Container>
       </ThemeProvider>

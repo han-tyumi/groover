@@ -6,10 +6,10 @@ import {
   Typography,
 } from '@material-ui/core';
 import { NextPage } from 'next';
-import { useEffect, useState } from 'react';
-import firebaseApp from '../client/firebase';
+import { useSelector } from 'react-redux';
 import Login from '../components/Login';
 import User from '../components/User';
+import { RootState } from '../rootReducer';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -22,23 +22,9 @@ const useStyles = makeStyles((theme) =>
 
 const Index: NextPage = () => {
   const classes = useStyles();
-  const [user, setUser] = useState<firebase.User | null | undefined>();
+  const auth = useSelector((state: RootState) => state.firebase.auth);
 
-  useEffect(() => {
-    const sub = firebaseApp.auth().onAuthStateChanged((u) => setUser(u));
-    return (): void => sub();
-  }, []);
-
-  return user === undefined ? (
-    <Grid container justify="center" alignItems="center" spacing={2}>
-      <Grid item>
-        <CircularProgress color="secondary" />
-      </Grid>
-      <Grid item>
-        <Typography variant="h5">Authenticating...</Typography>
-      </Grid>
-    </Grid>
-  ) : (
+  return auth.isLoaded ? (
     <Grid container direction="column" spacing={3}>
       <Grid item>
         <Typography variant="h1" color="primary">
@@ -52,7 +38,16 @@ const Index: NextPage = () => {
           Collaborate and listen
         </Typography>
       </Grid>
-      <Grid item>{user ? <User user={user} /> : <Login />}</Grid>
+      <Grid item>{auth.isEmpty ? <Login /> : <User user={auth} />}</Grid>
+    </Grid>
+  ) : (
+    <Grid container justify="center" alignItems="center" spacing={2}>
+      <Grid item>
+        <CircularProgress color="secondary" />
+      </Grid>
+      <Grid item>
+        <Typography variant="h5">Authenticating...</Typography>
+      </Grid>
     </Grid>
   );
 };

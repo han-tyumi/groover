@@ -1,7 +1,8 @@
 import { Avatar, Card, CardHeader } from '@material-ui/core';
 import { NextPage } from 'next';
+import { FirebaseReducer } from 'react-redux-firebase';
 
-const User: NextPage<{ user: firebase.User }> = ({ user }) => {
+const User: NextPage<{ user: FirebaseReducer.AuthState }> = ({ user }) => {
   return (
     <Card>
       <CardHeader
