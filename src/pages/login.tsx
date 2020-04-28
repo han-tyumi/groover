@@ -1,13 +1,15 @@
 import { Box, CircularProgress, Paper, Typography } from '@material-ui/core';
 import { NextPage } from 'next';
 import PropTypes from 'prop-types';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useFirebase } from 'react-redux-firebase';
+import { RootState } from '../rootReducer';
+import { setStatus } from './loginSlice';
 
 const Login: NextPage<{ token?: string }> = ({ token }) => {
-  const [status, setStatus] = useState<string>();
-  const [error, setError] = useState<string>();
-
+  const { status, error } = useSelector((state: RootState) => state.login);
+  const dispatch = useDispatch();
   const firebase = useFirebase();
 
   async function signIn(): Promise<void> {
@@ -16,11 +18,12 @@ const Login: NextPage<{ token?: string }> = ({ token }) => {
         await firebase.login({ token, profile: {} });
         window.close();
       } catch (error) {
-        setStatus('Invalid token!');
-        setError(error.toString());
+        dispatch(
+          setStatus({ status: 'Invalid token!', error: error.toString() }),
+        );
       }
     } else {
-      setStatus('Missing token!');
+      dispatch(setStatus({ status: 'Missing token!' }));
     }
   }
 
