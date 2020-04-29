@@ -2,7 +2,11 @@ import crypto from 'crypto';
 import { NextApiRequest, NextApiResponse } from 'next';
 import spotifyApi from '../../server/spotify-api';
 
-const O_AUTH_SCOPES: string[] = ['user-read-email', 'user-read-private'];
+const O_AUTH_SCOPES: string[] = [
+  'user-read-email',
+  'user-read-private',
+  'user-library-read',
+];
 
 export default function (req: NextApiRequest, res: NextApiResponse): void {
   const state = req.cookies.state || crypto.randomBytes(20).toString('hex');

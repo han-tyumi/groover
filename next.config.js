@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const {
+  BASE_URL,
   FIREBASE_API_KEY,
   FIREBASE_AUTH_DOMAIN,
   FIREBASE_DATABASE_URL,
@@ -13,6 +14,7 @@ const {
 
 module.exports = {
   env: {
+    BASE_URL,
     FIREBASE_API_KEY,
     FIREBASE_AUTH_DOMAIN,
     FIREBASE_DATABASE_URL,

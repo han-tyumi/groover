@@ -11,5 +11,4 @@ node_modules
 .firebaserc
 
 # HTTPS
-localhost.crt
-localhost.key
+keys

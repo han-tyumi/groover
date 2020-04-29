@@ -6,6 +6,7 @@ import {
   Typography,
 } from '@material-ui/core';
 import { NextPage } from 'next';
+import Link from 'next/link';
 import { useSelector } from 'react-redux';
 import Login from '../components/Login';
 import User from '../components/User';
@@ -20,7 +21,7 @@ const useStyles = makeStyles((theme) =>
   }),
 );
 
-const Index: NextPage = () => {
+const IndexPage: NextPage = () => {
   const classes = useStyles();
   const auth = useSelector((state: RootState) => state.firebase.auth);
 
@@ -39,6 +40,11 @@ const Index: NextPage = () => {
         </Typography>
       </Grid>
       <Grid item>{auth.isEmpty ? <Login /> : <User user={auth} />}</Grid>
+      <Grid item>
+        <Link href={`/user/${auth.uid}`}>
+          <a>User</a>
+        </Link>
+      </Grid>
     </Grid>
   ) : (
     <Grid container justify="center" alignItems="center" spacing={2}>
@@ -52,4 +58,4 @@ const Index: NextPage = () => {
   );
 };
 
-export default Index;
+export default IndexPage;

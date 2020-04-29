@@ -7,7 +7,7 @@ import { useFirebase } from 'react-redux-firebase';
 import { RootState } from '../rootReducer';
 import { setStatus } from './loginSlice';
 
-const Login: NextPage<{ token?: string }> = ({ token }) => {
+const LoginPage: NextPage<{ token?: string }> = ({ token }) => {
   const { status, error } = useSelector((state: RootState) => state.login);
   const dispatch = useDispatch();
   const firebase = useFirebase();
@@ -54,14 +54,14 @@ const Login: NextPage<{ token?: string }> = ({ token }) => {
   );
 };
 
-Login.propTypes = {
+LoginPage.propTypes = {
   token: PropTypes.string,
 };
 
-Login.getInitialProps = ({
+LoginPage.getInitialProps = ({
   query: { token },
 }): {
   token?: string | undefined;
 } => (typeof token !== 'string' ? { token: undefined } : { token });
 
-export default Login;
+export default LoginPage;

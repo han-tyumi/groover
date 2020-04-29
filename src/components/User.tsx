@@ -1,20 +1,32 @@
-import { Avatar, Card, CardHeader } from '@material-ui/core';
+import { Avatar, Card, CardHeader, Grid } from '@material-ui/core';
 import { NextPage } from 'next';
 import { FirebaseReducer } from 'react-redux-firebase';
 
-const User: NextPage<{ user: FirebaseReducer.AuthState }> = ({ user }) => {
+const User: NextPage<{
+  user: FirebaseReducer.AuthState;
+  tracks?: SpotifyApi.SavedTrackObject[];
+}> = ({ user, tracks }) => {
   return (
-    <Card>
-      <CardHeader
-        avatar={
-          <Avatar
-            alt={user.displayName || undefined}
-            src={user.photoURL || undefined}
+    <Grid>
+      <Card>
+        <CardHeader
+          avatar={
+            <Avatar
+              alt={user.displayName || undefined}
+              src={user.photoURL || undefined}
+            />
+          }
+          title={user.displayName}
+        />
+      </Card>
+      {tracks?.map(({ track }) => (
+        <Card>
+          <CardHeader
+            title={`${track.name} on ${track.album.name} by ${track.artists[0].name}`}
           />
-        }
-        title={user.displayName}
-      />
-    </Card>
+        </Card>
+      ))}
+    </Grid>
   );
 };
 
