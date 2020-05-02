@@ -1,7 +1,7 @@
 import { combineReducers } from '@reduxjs/toolkit';
 import { firebaseReducer } from 'react-redux-firebase';
 import { firestoreReducer } from 'redux-firestore';
-import loginReducer from './pages/loginSlice';
+import loginReducer from './loginSlice';
 
 const rootReducer = combineReducers({
   login: loginReducer,

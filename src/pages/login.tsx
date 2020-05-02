@@ -6,8 +6,8 @@ import { parseCookies } from 'nookies';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useFirebase } from 'react-redux-firebase';
-import { RootState } from '../rootReducer';
-import { setStatus } from './loginSlice';
+import { setStatus } from '../store/loginSlice';
+import { RootState } from '../store/rootReducer';
 
 const LoginPage: NextPage<{ token?: string }> = ({ token }) => {
   const { status, error } = useSelector((state: RootState) => state.login);
