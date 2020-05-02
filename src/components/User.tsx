@@ -1,9 +1,8 @@
 import { Avatar, Card, CardHeader, Grid } from '@material-ui/core';
-import { NextPage } from 'next';
-import { FirebaseReducer } from 'react-redux-firebase';
+import { UserInfo } from '../server/models';
 
-const User: NextPage<{
-  user: FirebaseReducer.AuthState;
+const User: React.FunctionComponent<{
+  user: UserInfo;
   tracks?: SpotifyApi.SavedTrackObject[];
 }> = ({ user, tracks }) => {
   return (

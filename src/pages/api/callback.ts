@@ -1,32 +1,42 @@
+import { admin } from 'firebase-admin/lib/auth';
+import HttpStatus from 'http-status-codes';
 import { NextApiRequest, NextApiResponse } from 'next';
-import firebaseAdmin from '../../server/firebase-admin';
+import { auth, firestore } from '../../server/firebase-admin';
 import spotifyApi from '../../server/spotify-api';
 
-async function createUser(
-  spotifyId: string,
-  displayName: string,
-  photoURL: string,
-  email: string,
-  accessToken: string,
-  refreshToken: string,
-): Promise<string> {
-  const uid = `spotify:${spotifyId}`;
-  const auth = firebaseAdmin.auth();
-  const db = firebaseAdmin.firestore();
+interface SpotifyUser {
+  id: string;
+  displayName: string;
+  photoURL: string;
+  email: string;
+  accessToken: string;
+  refreshToken: string;
+}
 
-  const dbTask = db.collection('spotifyToken').doc(uid).set({
-    accessToken,
-    refreshToken,
-  });
+/**
+ * Creates a new user within firebase using the given Spotify account information.
+ * @param user The user's information.
+ */
+async function createUser({
+  id,
+  displayName,
+  photoURL,
+  email,
+  accessToken,
+  refreshToken,
+}: SpotifyUser): Promise<string> {
+  const uid = id;
 
-  const user = {
+  const user: admin.auth.CreateRequest = {
     displayName,
     photoURL,
     email,
     emailVerified: true,
   };
 
+  // attempt to update user
   const userTask = auth.updateUser(uid, user).catch((error) => {
+    // create new user if not found
     if (error.code === 'auth/user-not-found') {
       return auth.createUser({
         uid,
@@ -36,52 +46,75 @@ async function createUser(
     throw error;
   });
 
+  // save spotify tokens
+  const dbTask = firestore.collection('spotifyToken').doc(uid).set({
+    accessToken,
+    refreshToken,
+  });
+
+  // wait for tasks to finish
   await Promise.all([dbTask, userTask]);
 
+  // return custom token
   return auth.createCustomToken(uid);
 }
 
+/**
+ * Handles a Spotify login callback by creating a new firebase user.
+ * @param req The request.
+ * @param res The response.
+ */
 export default async function (
   req: NextApiRequest,
   res: NextApiResponse,
 ): Promise<void> {
+  const { query, cookies } = req;
+
   try {
-    if (!req.cookies.state) {
+    // validate state cookie
+    if (!cookies.state) {
       throw new Error(
         'State cookie not set or expired. Maybe you took too long to authorize. Please try again.',
       );
-    } else if (req.cookies.state !== req.query.state) {
+    } else if (cookies.state !== query.state) {
       throw new Error('State validation failed.');
     }
 
-    const {
-      query: { code },
-    } = req;
-
-    if (typeof code === 'string') {
-      const {
-        body: { access_token: accessToken, refresh_token: refreshToken },
-      } = await spotifyApi.authorizationCodeGrant(code);
-      spotifyApi.setAccessToken(accessToken);
-      spotifyApi.setRefreshToken(refreshToken);
-
-      const {
-        body: { id, display_name: displayName, email, images },
-      } = await spotifyApi.getMe();
-      if (displayName && images) {
-        const token = await createUser(
-          id,
-          displayName,
-          images[0].url,
-          email,
-          accessToken,
-          refreshToken,
-        );
-        res.writeHead(302, { Location: `/login?token=${token}` });
-      }
+    // check for authorization code
+    if (typeof query.code !== 'string') {
+      throw new Error('Authorization code missing.');
     }
+
+    // obtain access and refresh tokens
+    const {
+      body: { access_token: accessToken, refresh_token: refreshToken },
+    } = await spotifyApi.authorizationCodeGrant(query.code);
+    spotifyApi.setAccessToken(accessToken);
+    spotifyApi.setRefreshToken(refreshToken);
+
+    // create user using Spotify account information
+    const {
+      body: { id, display_name: displayName, email, images },
+    } = await spotifyApi.getMe();
+    const token = await createUser({
+      id,
+      displayName: displayName || email,
+      photoURL: images ? images[0].url : '',
+      email,
+      accessToken,
+      refreshToken,
+    });
+
+    // redirect to login page
+    res.writeHead(HttpStatus.MOVED_TEMPORARILY, {
+      Location: `/login?token=${token}`,
+    });
   } catch (error) {
-    res.json({ error: error.toString() });
+    let status = error.toString();
+    if (typeof query.error === 'string') {
+      status += `\n${query.error}`;
+    }
+    res.send(status);
   }
   res.end();
 }

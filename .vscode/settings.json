@@ -22,5 +22,5 @@
   "eslint.packageManager": "yarn",
 
   // cSpell
-  "cSpell.words": ["SPOTIFY"]
+  "cSpell.words": ["SPOTIFY", "serializable"]
 }

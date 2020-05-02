@@ -1,16 +1,15 @@
 import {
-  CircularProgress,
+  Button,
   createStyles,
   Grid,
   makeStyles,
   Typography,
 } from '@material-ui/core';
-import { NextPage } from 'next';
-import Link from 'next/link';
-import { useSelector } from 'react-redux';
+import { GetServerSideProps, NextPage } from 'next';
 import Login from '../components/Login';
 import User from '../components/User';
-import { RootState } from '../rootReducer';
+import { getUser, verifySession } from '../server/firebase-admin';
+import { UserInfo } from '../server/models';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -21,11 +20,10 @@ const useStyles = makeStyles((theme) =>
   }),
 );
 
-const IndexPage: NextPage = () => {
+const IndexPage: NextPage<{ user?: UserInfo }> = ({ user }) => {
   const classes = useStyles();
-  const auth = useSelector((state: RootState) => state.firebase.auth);
 
-  return auth.isLoaded ? (
+  return (
     <Grid container direction="column" spacing={3}>
       <Grid item>
         <Typography variant="h1" color="primary">
@@ -39,23 +37,26 @@ const IndexPage: NextPage = () => {
           Collaborate and listen
         </Typography>
       </Grid>
-      <Grid item>{auth.isEmpty ? <Login /> : <User user={auth} />}</Grid>
-      <Grid item>
-        <Link href={`/user/${auth.uid}`}>
-          <a>User</a>
-        </Link>
-      </Grid>
-    </Grid>
-  ) : (
-    <Grid container justify="center" alignItems="center" spacing={2}>
-      <Grid item>
-        <CircularProgress color="secondary" />
-      </Grid>
-      <Grid item>
-        <Typography variant="h5">Authenticating...</Typography>
-      </Grid>
+      <Grid item>{!user ? <Login /> : <User user={user} />}</Grid>
+      {user && (
+        <Grid item>
+          <Button variant="outlined" size="small" href="/api/session/logout">
+            Logout
+          </Button>
+        </Grid>
+      )}
     </Grid>
   );
+};
+
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+  try {
+    const { uid } = await verifySession(req);
+    const user = await getUser(uid);
+    return { props: { user } };
+  } catch (error) {
+    return { props: {} };
+  }
 };
 
 export default IndexPage;
