@@ -1,6 +1,7 @@
-import { admin } from 'firebase-admin/lib/auth';
+import admin from 'firebase-admin';
 import HttpStatus from 'http-status-codes';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { basicConverter, SpotifyTokens } from '../../server/firebase';
 import { auth, firestore } from '../../server/firebase-admin';
 import spotifyApi from '../../server/spotify-api';
 
@@ -11,6 +12,7 @@ interface SpotifyUser {
   email: string;
   accessToken: string;
   refreshToken: string;
+  expiresAt: Date;
 }
 
 /**
@@ -24,6 +26,7 @@ async function createUser({
   email,
   accessToken,
   refreshToken,
+  expiresAt,
 }: SpotifyUser): Promise<string> {
   const uid = id;
 
@@ -47,10 +50,15 @@ async function createUser({
   });
 
   // save spotify tokens
-  const dbTask = firestore.collection('spotifyToken').doc(uid).set({
-    accessToken,
-    refreshToken,
-  });
+  const dbTask = firestore
+    .collection('spotifyToken')
+    .doc(uid)
+    .withConverter(basicConverter<SpotifyTokens>())
+    .set({
+      accessToken,
+      refreshToken,
+      expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
+    });
 
   // wait for tasks to finish
   await Promise.all([dbTask, userTask]);
@@ -87,8 +95,14 @@ export default async function (
 
     // obtain access and refresh tokens
     const {
-      body: { access_token: accessToken, refresh_token: refreshToken },
+      body: {
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        expires_in: expiresIn,
+      },
     } = await spotifyApi.authorizationCodeGrant(query.code);
+    const expiresAt = new Date();
+    expiresAt.setSeconds(expiresAt.getSeconds() + expiresIn);
     spotifyApi.setAccessToken(accessToken);
     spotifyApi.setRefreshToken(refreshToken);
 
@@ -103,6 +117,7 @@ export default async function (
       email,
       accessToken,
       refreshToken,
+      expiresAt,
     });
 
     // redirect to login page
