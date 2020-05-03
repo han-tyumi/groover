@@ -7,9 +7,11 @@ import {
 } from '@material-ui/core';
 import { GetServerSideProps, NextPage } from 'next';
 import Login from '../components/Login';
+import Playlist from '../components/Playlist';
 import User from '../components/User';
 import { getUser, verifySession } from '../server/firebase-admin';
 import { UserInfo } from '../server/models';
+import { signIn } from '../server/spotify-api';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -20,7 +22,10 @@ const useStyles = makeStyles((theme) =>
   }),
 );
 
-const IndexPage: NextPage<{ user?: UserInfo }> = ({ user }) => {
+const IndexPage: NextPage<{
+  user?: UserInfo;
+  tracks?: SpotifyApi.SavedTrackObject[];
+}> = ({ user, tracks }) => {
   const classes = useStyles();
 
   return (
@@ -37,7 +42,12 @@ const IndexPage: NextPage<{ user?: UserInfo }> = ({ user }) => {
           Collaborate and listen
         </Typography>
       </Grid>
-      <Grid item>{!user ? <Login /> : <User user={user} />}</Grid>
+      <Grid item>{user ? <User user={user} /> : <Login />}</Grid>
+      {tracks && (
+        <Grid item>
+          <Playlist tracks={tracks} />
+        </Grid>
+      )}
       {user && (
         <Grid item>
           <Button variant="outlined" size="small" href="/api/session/logout">
@@ -53,7 +63,9 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   try {
     const { uid } = await verifySession(req);
     const user = await getUser(uid);
-    return { props: { user } };
+    const spotifyApi = await signIn(uid);
+    const tracks = (await spotifyApi.getMySavedTracks()).body.items;
+    return { props: { user, tracks } };
   } catch (error) {
     return { props: {} };
   }

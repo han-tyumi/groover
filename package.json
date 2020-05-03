@@ -14,6 +14,7 @@
     "heroku-postbuild": "yarn build"
   },
   "cacheDirectories": [
+    "node_modules",
     ".next/cache"
   ],
   "husky": {
