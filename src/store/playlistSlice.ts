@@ -1,39 +1,39 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { differenceBy, unionBy } from 'lodash';
 
 type PlaylistState = {
-  checked: SpotifyApi.SavedTrackObject[];
-  left: SpotifyApi.SavedTrackObject[];
-  right: SpotifyApi.SavedTrackObject[];
+  playlist: SpotifyApi.TrackObjectFull[];
 };
 
 const initialState: PlaylistState = {
-  checked: [],
-  left: [],
-  right: [],
+  playlist: [],
 };
 
 const playlistSlice = createSlice({
   name: 'playlist',
   initialState,
   reducers: {
-    setChecked(
+    setPlaylist(
       state,
-      action: PayloadAction<SpotifyApi.SavedTrackObject[]>,
+      action: PayloadAction<SpotifyApi.TrackObjectFull[]>,
     ): void {
-      state.checked = action.payload;
+      state.playlist = action.payload;
     },
-    setLeft(state, action: PayloadAction<SpotifyApi.SavedTrackObject[]>): void {
-      state.left = action.payload;
-    },
-    setRight(
+    addTracks(
       state,
-      action: PayloadAction<SpotifyApi.SavedTrackObject[]>,
+      action: PayloadAction<SpotifyApi.TrackObjectFull[]>,
     ): void {
-      state.right = action.payload;
+      state.playlist = unionBy(state.playlist, action.payload, 'id');
+    },
+    removeTracks(
+      state,
+      action: PayloadAction<SpotifyApi.TrackObjectFull[]>,
+    ): void {
+      state.playlist = differenceBy(state.playlist, action.payload, 'id');
     },
   },
 });
 
-export const { setChecked, setLeft, setRight } = playlistSlice.actions;
+export const { setPlaylist, addTracks } = playlistSlice.actions;
 
 export default playlistSlice.reducer;
