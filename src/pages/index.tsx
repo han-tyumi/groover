@@ -1,7 +1,8 @@
 import { createStyles, Grid, makeStyles, Typography } from '@material-ui/core';
 import { GetServerSideProps, NextPage } from 'next';
-import EditPlaylist from '../components/EditPlaylist';
 import Login from '../components/Login';
+import Playlist from '../components/playlist/Playlist';
+import Search from '../components/playlist/Search';
 import User from '../components/User';
 import { getUser, verifySession } from '../server/firebase-admin';
 import { UserInfo } from '../server/models';
@@ -37,7 +38,12 @@ const IndexPage: NextPage<{
       <Grid item>{user ? <User user={user} /> : <Login />}</Grid>
       {user && (
         <Grid item>
-          <EditPlaylist />
+          <Search />
+        </Grid>
+      )}
+      {user && (
+        <Grid item>
+          <Playlist />
         </Grid>
       )}
     </Grid>

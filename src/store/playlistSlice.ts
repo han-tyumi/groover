@@ -34,6 +34,6 @@ const playlistSlice = createSlice({
   },
 });
 
-export const { setPlaylist, addTracks } = playlistSlice.actions;
+export const { setPlaylist, addTracks, removeTracks } = playlistSlice.actions;
 
 export default playlistSlice.reducer;
