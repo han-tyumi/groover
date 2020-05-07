@@ -20,6 +20,7 @@ import {
 import { Icons } from 'material-table';
 import { forwardRef } from 'react';
 
+/** Default icons to be used by material-tables. */
 export const icons: Icons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
   Check: forwardRef((props, ref) => <Check {...props} ref={ref} />),
@@ -44,6 +45,10 @@ export const icons: Icons = {
   ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />),
 };
 
+/**
+ * Returns a function to be used for the material-table action icon property.
+ * @param Icon The Material-UI icon to be used.
+ */
 export const actionIcon = (
   Icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>>,
 ) => (): React.ReactElement<SvgIconProps> =>

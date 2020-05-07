@@ -1,7 +1,7 @@
 import HttpStatus from 'http-status-codes';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { destroyCookie } from 'nookies';
-import { auth } from '../../../server/firebase-admin';
+import { auth } from 'server/firebase-admin';
 
 /**
  * Logs out the user by destroying their session cookie and revoking their refresh tokens.

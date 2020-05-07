@@ -2,11 +2,15 @@ import { RemoveCircle } from '@material-ui/icons';
 import MaterialTable, { Action } from 'material-table';
 import { createRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { removeTracks } from '../../store/playlistSlice';
-import { RootState } from '../../store/rootReducer';
+import { removeTracks } from 'store/playlistSlice';
+import { RootState } from 'store/rootReducer';
 import { actionIcon, icons, trackColumns, TrackTableData } from './models';
 import { unwrapActionData, wrapTableData } from './utils';
 
+/**
+ * Represents a Spotify playlist.
+ * Tracks are added through the store and can be removed through this component.
+ */
 const Playlist: React.FunctionComponent = () => {
   const { playlist } = useSelector((state: RootState) => state.playlist);
   const dispatch = useDispatch();

@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import HttpStatus from 'http-status-codes';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { setCookie } from 'nookies';
-import spotifyApi from '../../server/spotify-api';
+import spotifyApi from 'server/spotify-api';
 
 const O_AUTH_SCOPES: string[] = [
   'user-read-email',

@@ -1,7 +1,7 @@
 import HttpStatus from 'http-status-codes';
 import { NextApiRequest, NextApiResponse } from 'next';
 import nookies from 'nookies';
-import { auth } from '../../../server/firebase-admin';
+import { auth } from 'server/firebase-admin';
 
 /** Sessions expire after 5 days. */
 export const SESSION_EXPIRES = 60 * 60 * 24 * 5 * 1000;

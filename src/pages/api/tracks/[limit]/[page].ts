@@ -1,6 +1,6 @@
 import HttpStatus from 'http-status-codes';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { signIn } from '../../../../server/spotify-api';
+import { signIn } from 'server/spotify-api';
 
 const MAX_LIMIT = 50;
 

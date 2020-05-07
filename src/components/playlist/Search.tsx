@@ -2,10 +2,14 @@ import { AddBox } from '@material-ui/icons';
 import MaterialTable, { Action, QueryResult } from 'material-table';
 import { createRef } from 'react';
 import { useDispatch } from 'react-redux';
-import { addTracks } from '../../store/playlistSlice';
+import { addTracks } from 'store/playlistSlice';
 import { actionIcon, icons, trackColumns, TrackTableData } from './models';
 import { fetchJson, unwrapActionData, wrapTableData } from './utils';
 
+/**
+ * Used to search for tracks within Spotify.
+ * Added tracks are added to the store to be used by other components.
+ */
 const Search: React.FunctionComponent = () => {
   const dispatch = useDispatch();
   const tableRef = createRef<MaterialTable<TrackTableData>>();
@@ -29,6 +33,7 @@ const Search: React.FunctionComponent = () => {
         selection: true,
         maxBodyHeight: 500,
         draggable: false,
+        debounceInterval: 1000,
       }}
       columns={trackColumns}
       data={async ({

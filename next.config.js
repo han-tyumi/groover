@@ -24,4 +24,7 @@ module.exports = {
     FIREBASE_APP_ID,
     FIREBASE_MEASUREMENT_ID,
   },
+  experimental: {
+    jsconfigPaths: true,
+  },
 };

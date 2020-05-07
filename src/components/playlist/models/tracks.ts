@@ -1,8 +1,10 @@
 import { Column } from 'material-table';
 import { TableDataWrapper } from '../utils';
 
+/** Data to be used by material-tables displaying Spotify track information. */
 export type TrackTableData = TableDataWrapper<SpotifyApi.TrackObjectFull>;
 
+/** Columns used to display Spotify track information in a material-table. */
 export const trackColumns: Column<TrackTableData>[] = [
   { title: 'Name', field: 'data.name' },
   {

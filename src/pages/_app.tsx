@@ -3,9 +3,9 @@ import App from 'next/app';
 import React from 'react';
 import { Provider } from 'react-redux';
 import { ReactReduxFirebaseProvider } from 'react-redux-firebase';
-import { rrfProps } from '../client/firebase';
-import theme from '../client/theme';
-import store from '../store';
+import { rrfProps } from 'client/firebase';
+import theme from 'client/theme';
+import store from 'store';
 
 export default class MyApp extends App {
   public componentDidMount(): void {

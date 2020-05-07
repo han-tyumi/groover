@@ -1,11 +1,11 @@
 import { createStyles, Grid, makeStyles, Typography } from '@material-ui/core';
 import { GetServerSideProps, NextPage } from 'next';
-import Login from '../components/Login';
-import Playlist from '../components/playlist/Playlist';
-import Search from '../components/playlist/Search';
-import User from '../components/User';
-import { getUser, verifySession } from '../server/firebase-admin';
-import { UserInfo } from '../server/models';
+import Login from 'components/Login';
+import Playlist from 'components/playlist/Playlist';
+import Search from 'components/playlist/Search';
+import User from 'components/User';
+import { getUser, verifySession } from 'server/firebase-admin';
+import { UserInfo } from 'server/models';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -37,14 +37,14 @@ const IndexPage: NextPage<{
       </Grid>
       <Grid item>{user ? <User user={user} /> : <Login />}</Grid>
       {user && (
-        <Grid item>
-          <Search />
-        </Grid>
-      )}
-      {user && (
-        <Grid item>
-          <Playlist />
-        </Grid>
+        <>
+          <Grid item>
+            <Search />
+          </Grid>
+          <Grid item>
+            <Playlist />
+          </Grid>
+        </>
       )}
     </Grid>
   );

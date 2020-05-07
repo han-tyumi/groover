@@ -6,7 +6,7 @@ import {
   ReactReduxFirebaseProviderProps,
 } from 'react-redux-firebase';
 import { createFirestoreInstance } from 'redux-firestore';
-import store from '../store';
+import store from 'store';
 
 !firebase.apps.length &&
   firebase.initializeApp({

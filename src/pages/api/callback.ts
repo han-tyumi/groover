@@ -1,9 +1,9 @@
 import admin from 'firebase-admin';
 import HttpStatus from 'http-status-codes';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { basicConverter, SpotifyTokens } from '../../server/firebase';
-import { auth, firestore } from '../../server/firebase-admin';
-import spotifyApi from '../../server/spotify-api';
+import { basicConverter, SpotifyTokens } from 'server/firebase';
+import { auth, firestore } from 'server/firebase-admin';
+import spotifyApi from 'server/spotify-api';
 
 interface SpotifyUser {
   id: string;
