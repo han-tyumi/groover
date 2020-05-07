@@ -8,6 +8,8 @@ const O_AUTH_SCOPES: string[] = [
   'user-read-email',
   'user-read-private',
   'user-library-read',
+  'playlist-modify-public',
+  'playlist-modify-private',
 ];
 
 /**

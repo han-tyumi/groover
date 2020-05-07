@@ -2,38 +2,48 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { differenceBy, unionBy } from 'lodash';
 
 type PlaylistState = {
-  playlist: SpotifyApi.TrackObjectFull[];
+  name: string;
+  tracks: SpotifyApi.TrackObjectFull[];
 };
 
 const initialState: PlaylistState = {
-  playlist: [],
+  name: '',
+  tracks: [],
 };
 
 const playlistSlice = createSlice({
   name: 'playlist',
   initialState,
   reducers: {
-    setPlaylist(
+    setName(state, action: PayloadAction<string>): void {
+      state.name = action.payload;
+    },
+    setTracks(
       state,
       action: PayloadAction<SpotifyApi.TrackObjectFull[]>,
     ): void {
-      state.playlist = action.payload;
+      state.tracks = action.payload;
     },
     addTracks(
       state,
       action: PayloadAction<SpotifyApi.TrackObjectFull[]>,
     ): void {
-      state.playlist = unionBy(state.playlist, action.payload, 'id');
+      state.tracks = unionBy(state.tracks, action.payload, 'id');
     },
     removeTracks(
       state,
       action: PayloadAction<SpotifyApi.TrackObjectFull[]>,
     ): void {
-      state.playlist = differenceBy(state.playlist, action.payload, 'id');
+      state.tracks = differenceBy(state.tracks, action.payload, 'id');
     },
   },
 });
 
-export const { setPlaylist, addTracks, removeTracks } = playlistSlice.actions;
+export const {
+  setName,
+  setTracks,
+  addTracks,
+  removeTracks,
+} = playlistSlice.actions;
 
 export default playlistSlice.reducer;

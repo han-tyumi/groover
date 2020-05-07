@@ -1,9 +1,10 @@
 import { createStyles, Grid, makeStyles, Typography } from '@material-ui/core';
-import { GetServerSideProps, NextPage } from 'next';
 import Login from 'components/Login';
+import CreatePlaylist from 'components/playlist/CreatePlaylist';
 import Playlist from 'components/playlist/Playlist';
 import Search from 'components/playlist/Search';
 import User from 'components/User';
+import { GetServerSideProps, NextPage } from 'next';
 import { getUser, verifySession } from 'server/firebase-admin';
 import { UserInfo } from 'server/models';
 
@@ -43,6 +44,9 @@ const IndexPage: NextPage<{
           </Grid>
           <Grid item>
             <Playlist />
+          </Grid>
+          <Grid item>
+            <CreatePlaylist />
           </Grid>
         </>
       )}

@@ -12,7 +12,7 @@ import { unwrapActionData, wrapTableData } from './utils';
  * Tracks are added through the store and can be removed through this component.
  */
 const Playlist: React.FunctionComponent = () => {
-  const { playlist } = useSelector((state: RootState) => state.playlist);
+  const { tracks } = useSelector((state: RootState) => state.playlist);
   const dispatch = useDispatch();
   const tableRef = createRef<MaterialTable<TrackTableData>>();
 
@@ -34,7 +34,7 @@ const Playlist: React.FunctionComponent = () => {
         searchFieldAlignment: 'left',
       }}
       columns={trackColumns}
-      data={wrapTableData(playlist)}
+      data={wrapTableData(tracks)}
       tableRef={tableRef}
       actions={[
         {
