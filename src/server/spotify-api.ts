@@ -1,4 +1,5 @@
 import admin from 'firebase-admin';
+import { IncomingMessage } from 'http';
 import { NextApiRequest } from 'next';
 import SpotifyWebApi from 'spotify-web-api-node';
 import { basicConverter, SpotifyTokens } from './firebase';
@@ -14,7 +15,9 @@ const spotifyApi = new SpotifyWebApi({
  * @param req The Next API request.
  * @returns Promise containing the Spotify Web API after Spotify user tokens have been retrieved.
  */
-export async function signIn(req: NextApiRequest): Promise<SpotifyWebApi>;
+export async function signIn(
+  req: NextApiRequest | IncomingMessage,
+): Promise<SpotifyWebApi>;
 
 /**
  * @param uid The user's user ID.
@@ -23,7 +26,7 @@ export async function signIn(req: NextApiRequest): Promise<SpotifyWebApi>;
 export async function signIn(uid: string): Promise<SpotifyWebApi>;
 
 export async function signIn(
-  reqOrUid: NextApiRequest | string,
+  reqOrUid: NextApiRequest | IncomingMessage | string,
 ): Promise<SpotifyWebApi> {
   // determine UID
   const uid =

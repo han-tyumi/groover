@@ -2,11 +2,13 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { differenceBy, unionBy } from 'lodash';
 
 type PlaylistState = {
+  url?: string;
   name: string;
   tracks: SpotifyApi.TrackObjectFull[];
 };
 
 const initialState: PlaylistState = {
+  url: undefined,
   name: '',
   tracks: [],
 };
@@ -15,6 +17,9 @@ const playlistSlice = createSlice({
   name: 'playlist',
   initialState,
   reducers: {
+    setUrl(state, action: PayloadAction<string>): void {
+      state.url = action.payload;
+    },
     setName(state, action: PayloadAction<string>): void {
       state.name = action.payload;
     },
@@ -40,6 +45,7 @@ const playlistSlice = createSlice({
 });
 
 export const {
+  setUrl,
   setName,
   setTracks,
   addTracks,

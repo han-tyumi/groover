@@ -45,9 +45,7 @@ const IndexPage: NextPage<{
           <Grid item>
             <Playlist />
           </Grid>
-          <Grid item>
-            <CreatePlaylist />
-          </Grid>
+          <CreatePlaylist />
         </>
       )}
     </Grid>
