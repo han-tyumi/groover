@@ -1,27 +1,29 @@
 import {
+  Button,
+  CircularProgress,
   createStyles,
-  IconButton,
   makeStyles,
   Paper,
   TextField,
   Theme,
 } from '@material-ui/core';
-import { Create } from '@material-ui/icons';
+import { useSnackbar } from 'notistack';
+import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setName } from 'store/playlistSlice';
 import { RootState } from 'store/rootReducer';
-import { fetchJson } from './utils';
+import { delay, fetchJson } from './utils';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       display: 'flex',
       alignItems: 'center',
-      padding: theme.spacing(1),
+      padding: theme.spacing(2, 3),
     },
     input: {
       flex: 1,
-      marginRight: theme.spacing(1),
+      marginRight: theme.spacing(2),
     },
   }),
 );
@@ -30,6 +32,8 @@ const CreatePlaylist: React.FunctionComponent = () => {
   const classes = useStyles();
   const { name, tracks } = useSelector((state: RootState) => state.playlist);
   const dispatch = useDispatch();
+  const { enqueueSnackbar } = useSnackbar();
+  const [loading, setLoading] = useState(false);
 
   return (
     <Paper>
@@ -39,13 +43,21 @@ const CreatePlaylist: React.FunctionComponent = () => {
         autoComplete="off"
         onSubmit={async (event): Promise<void> => {
           event.preventDefault();
-          await fetchJson(`/api/create/${name}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(tracks),
-          });
+          const cancelAction = delay(() => setLoading(true), 800);
+          try {
+            await fetchJson(`/api/create/${name}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(tracks),
+            });
+            enqueueSnackbar('Created Playlist', { variant: 'success' });
+          } catch (error) {
+            enqueueSnackbar(error.toString(), { variant: 'error' });
+          }
+          cancelAction();
+          setLoading(false);
         }}
       >
         <TextField
@@ -60,9 +72,14 @@ const CreatePlaylist: React.FunctionComponent = () => {
             void dispatch(setName(value))
           }
         />
-        <IconButton type="submit">
-          <Create />
-        </IconButton>
+        <Button
+          type="submit"
+          color="primary"
+          variant="contained"
+          disabled={!tracks.length}
+        >
+          {loading ? <CircularProgress size={30} color="inherit" /> : 'Create'}
+        </Button>
       </form>
     </Paper>
   );

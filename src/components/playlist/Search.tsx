@@ -1,5 +1,6 @@
 import { AddBox } from '@material-ui/icons';
 import MaterialTable, { Action, QueryResult } from 'material-table';
+import { useSnackbar } from 'notistack';
 import { createRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { addTracks } from 'store/playlistSlice';
@@ -13,18 +14,30 @@ import { fetchJson, unwrapActionData, wrapTableData } from './utils';
 const Search: React.FunctionComponent = () => {
   const dispatch = useDispatch();
   const tableRef = createRef<MaterialTable<TrackTableData>>();
+  const { enqueueSnackbar } = useSnackbar();
 
   const addAction: Action<TrackTableData> = {
+    tooltip: 'Add',
     icon: actionIcon(AddBox),
     onClick: (_event, data): void => {
-      dispatch(addTracks(unwrapActionData(data)));
+      const added = unwrapActionData(data);
+      dispatch(addTracks(added));
+
       tableRef.current?.onAllSelected(false);
+
+      const amount = added.length;
+      enqueueSnackbar(
+        'Added ' + (amount > 1 ? `${amount} Tracks` : `${added[0].name}`),
+        {
+          variant: 'info',
+        },
+      );
     },
   };
 
   return (
     <MaterialTable
-      title="Tracks"
+      title="Search"
       icons={icons}
       options={{
         pageSize: 25,
@@ -74,12 +87,10 @@ const Search: React.FunctionComponent = () => {
       tableRef={tableRef}
       actions={[
         {
-          tooltip: 'Add Track',
           position: 'row',
           ...addAction,
         },
         {
-          tooltip: 'Add Tracks',
           position: 'toolbarOnSelect',
           ...addAction,
         },

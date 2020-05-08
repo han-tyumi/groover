@@ -1,10 +1,11 @@
 import { Box, Container, CssBaseline, ThemeProvider } from '@material-ui/core';
+import { rrfProps } from 'client/firebase';
+import theme from 'client/theme';
 import App from 'next/app';
+import { SnackbarProvider } from 'notistack';
 import React from 'react';
 import { Provider } from 'react-redux';
 import { ReactReduxFirebaseProvider } from 'react-redux-firebase';
-import { rrfProps } from 'client/firebase';
-import theme from 'client/theme';
 import store from 'store';
 
 export default class MyApp extends App {
@@ -28,7 +29,14 @@ export default class MyApp extends App {
           >
             <Provider store={store}>
               <ReactReduxFirebaseProvider {...rrfProps}>
-                <Component {...pageProps} />
+                <SnackbarProvider
+                  anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+                  autoHideDuration={1000}
+                  maxSnack={1}
+                  dense
+                >
+                  <Component {...pageProps} />
+                </SnackbarProvider>
               </ReactReduxFirebaseProvider>
             </Provider>
           </Box>

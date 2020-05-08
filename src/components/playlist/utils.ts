@@ -31,3 +31,15 @@ export const unwrapActionData = <T>(
 export const fetchJson = async <T>(
   ...args: Parameters<typeof fetch>
 ): Promise<T> => (await (await fetch(...args)).json()) as T;
+
+/**
+ * Delays an action by a number of milliseconds.
+ *
+ * @param action The action to delay.
+ * @param ms The number of milliseconds to delay the action.
+ * @returns A function that can be called to cancel the action.
+ */
+export const delay = (action: () => void, ms: number): (() => void) => {
+  const start = window.setTimeout(() => action(), ms);
+  return (): void => void window.clearTimeout(start);
+};
