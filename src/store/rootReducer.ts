@@ -1,14 +1,21 @@
-import { combineReducers } from '@reduxjs/toolkit';
-import { firebaseReducer } from 'react-redux-firebase';
+import { combineReducers, Reducer } from '@reduxjs/toolkit';
+import { firebaseReducer, FirestoreReducer } from 'react-redux-firebase';
 import { firestoreReducer } from 'redux-firestore';
+import { PlaylistInfo } from 'server/models';
 import loginReducer from './loginSlice';
-import playlistReducer from './playlistSlice';
+
+interface FirestoreReducer<Schema> extends FirestoreReducer.Reducer {
+  data: { [T in keyof Schema]?: Record<string, Schema[T] | undefined> };
+}
+
+interface Schema {
+  playlist: PlaylistInfo;
+}
 
 const rootReducer = combineReducers({
   firebase: firebaseReducer,
-  firestore: firestoreReducer,
+  firestore: firestoreReducer as Reducer<FirestoreReducer<Schema>>,
   login: loginReducer,
-  playlist: playlistReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

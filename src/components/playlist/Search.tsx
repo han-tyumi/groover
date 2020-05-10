@@ -1,37 +1,59 @@
 import { AddBox } from '@material-ui/icons';
+import firebase from 'firebase';
 import MaterialTable, { Action, QueryResult } from 'material-table';
 import { useSnackbar } from 'notistack';
 import { createRef } from 'react';
-import { useDispatch } from 'react-redux';
-import { addTracks } from 'store/playlistSlice';
+import { useFirestore } from 'react-redux-firebase';
 import { actionIcon, icons, trackColumns, TrackTableData } from './models';
-import { fetchJson, unwrapActionData, wrapTableData } from './utils';
+import { delay, fetchJson, unwrapActionData, wrapTableData } from './utils';
 
 /**
  * Used to search for tracks within Spotify.
- * Added tracks are added to the store to be used by other components.
+ * Added tracks are added to the playlist firestore doc to be used by other components.
  */
-const Search: React.FunctionComponent = () => {
-  const dispatch = useDispatch();
-  const tableRef = createRef<MaterialTable<TrackTableData>>();
+const Search: React.FunctionComponent<{ id: string }> = ({ id }) => {
+  const firestore = useFirestore();
   const { enqueueSnackbar } = useSnackbar();
+
+  const tableRef = createRef<MaterialTable<TrackTableData>>();
 
   const addAction: Action<TrackTableData> = {
     tooltip: 'Add',
     icon: actionIcon(AddBox),
-    onClick: (_event, data): void => {
-      const added = unwrapActionData(data);
-      dispatch(addTracks(added));
-
-      tableRef.current?.onAllSelected(false);
-
-      const amount = added.length;
-      enqueueSnackbar(
-        'Added ' + (amount > 1 ? `${amount} Tracks` : `${added[0].name}`),
-        {
-          variant: 'info',
-        },
+    onClick: async (_event, data): Promise<void> => {
+      const cancelAction = delay(
+        () =>
+          enqueueSnackbar('Adding taking longer than expected...', {
+            variant: 'info',
+          }),
+        1000,
       );
+
+      try {
+        // add tracks to firestore
+        const added = unwrapActionData(data);
+        await firestore
+          .collection('playlist')
+          .doc(id)
+          .update({
+            tracks: firebase.firestore.FieldValue.arrayUnion(...added),
+          });
+
+        // clear any selection
+        tableRef.current?.onAllSelected(false);
+
+        const amount = added.length;
+        enqueueSnackbar(
+          'Added ' + (amount > 1 ? `${amount} Tracks` : `${added[0].name}`),
+          {
+            variant: 'info',
+          },
+        );
+      } catch (error) {
+        enqueueSnackbar(error.toString(), { variant: 'error' });
+      }
+
+      cancelAction();
     },
   };
 
@@ -44,6 +66,7 @@ const Search: React.FunctionComponent = () => {
         pageSizeOptions: [25, 50],
         searchFieldAlignment: 'left',
         selection: true,
+        minBodyHeight: 500,
         maxBodyHeight: 500,
         draggable: false,
         debounceInterval: 1000,
@@ -55,6 +78,8 @@ const Search: React.FunctionComponent = () => {
         pageSize,
       }): Promise<QueryResult<TrackTableData>> => {
         try {
+          // load user's saved tracks by default,
+          // otherwise search Spotify's entire collection
           let pager:
             | SpotifyApi.PagingObject<SpotifyApi.TrackObjectFull>
             | SpotifyApi.UsersSavedTracksResponse;

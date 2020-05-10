@@ -1,16 +1,13 @@
 import { createStyles, Grid, makeStyles, Typography } from '@material-ui/core';
+import Play from 'components/playlist/Play';
 import Playlist from 'components/playlist/Playlist';
 import User from 'components/User';
 import HttpStatus from 'http-status-codes';
 import { GetServerSideProps, NextPage } from 'next';
-import { PlaylistInfo } from 'pages/api/create/[name]';
-import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { basicConverter } from 'server/firebase';
 import { firestore, getUser } from 'server/firebase-admin';
-import { UserInfo } from 'server/models';
+import { PlaylistInfo, UserInfo } from 'server/models';
 import { signIn } from 'server/spotify-api';
-import { setTracks } from 'store/playlistSlice';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -23,14 +20,10 @@ const useStyles = makeStyles((theme) =>
 
 const PlaylistPage: NextPage<{
   user: UserInfo;
-  playlist: SpotifyApi.SinglePlaylistResponse;
-}> = ({ user, playlist }) => {
+  playlist: PlaylistInfo;
+  devices: SpotifyApi.UserDevice[];
+}> = ({ user, playlist, devices }) => {
   const classes = useStyles();
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(setTracks(playlist.tracks.items.map((i) => i.track)));
-  }, []);
 
   return (
     <Grid container direction="column" spacing={3}>
@@ -50,38 +43,46 @@ const PlaylistPage: NextPage<{
         <User user={user} />
       </Grid>
       <Grid item>
-        <Playlist />
+        <Playlist id={playlist.id} />
       </Grid>
+      <Play playlist={playlist} devices={devices} />
     </Grid>
   );
 };
 
 export const getServerSideProps: GetServerSideProps<
-  { user?: UserInfo; playlist?: SpotifyApi.SinglePlaylistResponse },
-  { url: string }
+  {
+    user?: UserInfo;
+    playlist?: PlaylistInfo;
+    devices?: SpotifyApi.UserDevice[];
+  },
+  { id: string }
 > = async ({ req, res, params }) => {
   try {
-    if (!params?.url) {
-      throw new Error('Missing URL!');
+    const id = params?.id;
+    if (!id) {
+      throw new Error('Missing ID!');
     }
 
-    const playlistInfo = await (
+    // fetch playlist
+    const playlist = await (
       await firestore
         .collection('playlist')
-        .doc(params.url)
+        .doc(id)
         .withConverter(basicConverter<PlaylistInfo>())
         .get()
     ).data();
-    if (!playlistInfo) {
+    if (!playlist) {
       throw new Error("Playlist doesn't exist!");
     }
 
+    const user = await getUser(playlist.uid);
+
+    // fetch devices
     const spotifyApi = await signIn(req);
-    const playlist = await (await spotifyApi.getPlaylist(playlistInfo.id)).body;
+    const devices = await (await spotifyApi.getMyDevices()).body.devices;
 
-    const user = await getUser(playlistInfo.uid);
-
-    return { props: { user, playlist } };
+    return { props: { user, playlist, devices } };
   } catch (error) {
     res.writeHead(HttpStatus.MOVED_TEMPORARILY, { Location: '/' }).end();
     return { props: {} };

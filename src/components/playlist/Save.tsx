@@ -3,20 +3,20 @@ import {
   CircularProgress,
   createStyles,
   Grid,
-  Link,
   makeStyles,
   Paper,
   TextField,
   Theme,
 } from '@material-ui/core';
+import fetch from 'isomorphic-unfetch';
 import { useSnackbar } from 'notistack';
-import { PlaylistInfo } from 'pages/api/create/[name]';
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { setName, setUrl } from 'store/playlistSlice';
+import { useSelector } from 'react-redux';
+import { useFirestore, useFirestoreConnect } from 'react-redux-firebase';
 import { RootState } from 'store/rootReducer';
-import { delay, fetchJson } from './utils';
+import { delay } from './utils';
 
+/** @todo Refactor tp use HOC or wrapper for title. */
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
@@ -31,13 +31,20 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-const CreatePlaylist: React.FunctionComponent = () => {
+const Save: React.FunctionComponent<{ id: string }> = ({ id }) => {
   const classes = useStyles();
-  const { name, tracks, url } = useSelector(
-    (state: RootState) => state.playlist,
-  );
-  const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
+
+  useFirestoreConnect({
+    collection: 'playlist',
+    doc: id,
+  });
+  /** @todo Double check types for playlist collection when undefined (might actually be null). */
+  const playlist = useSelector(
+    (state: RootState) => state.firestore.data.playlist?.[id],
+  );
+  const firestore = useFirestore();
+
   const [loading, setLoading] = useState(false);
 
   return (
@@ -52,17 +59,13 @@ const CreatePlaylist: React.FunctionComponent = () => {
               event.preventDefault();
               const cancelAction = delay(() => setLoading(true), 800);
               try {
-                const playlistInfo = await fetchJson<PlaylistInfo>(
-                  `/api/create/${name}`,
-                  {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(tracks),
+                await fetch(`/api/create/${playlist?.name}`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
                   },
-                );
-                dispatch(setUrl(playlistInfo.url));
+                  body: JSON.stringify(playlist?.tracks),
+                });
                 enqueueSnackbar('Created Playlist', { variant: 'success' });
               } catch (error) {
                 enqueueSnackbar(error.toString(), { variant: 'error' });
@@ -79,15 +82,17 @@ const CreatePlaylist: React.FunctionComponent = () => {
               label="Playlist Name (Optional)"
               autoFocus
               value={name}
-              onChange={({ target: { value } }): void =>
-                void dispatch(setName(value))
-              }
+              onChange={async ({ target: { value } }): Promise<void> => {
+                await firestore.collection('playlist').doc(id).update({
+                  name: value,
+                });
+              }}
             />
             <Button
               type="submit"
               color="primary"
               variant="contained"
-              disabled={!tracks.length}
+              disabled={!playlist?.tracks}
             >
               {loading ? (
                 <CircularProgress size={30} color="inherit" />
@@ -98,13 +103,8 @@ const CreatePlaylist: React.FunctionComponent = () => {
           </form>
         </Paper>
       </Grid>
-      {url && (
-        <Grid item>
-          <Link href={`/playlist/${url}`}>{`/playlist/${url}`}</Link>
-        </Grid>
-      )}
     </>
   );
 };
 
-export default CreatePlaylist;
+export default Save;

@@ -1,12 +1,16 @@
-import { createStyles, Grid, makeStyles, Typography } from '@material-ui/core';
+import {
+  Button,
+  createStyles,
+  Grid,
+  makeStyles,
+  Typography,
+} from '@material-ui/core';
 import Login from 'components/Login';
-import CreatePlaylist from 'components/playlist/CreatePlaylist';
-import Playlist from 'components/playlist/Playlist';
-import Search from 'components/playlist/Search';
+import { fetchJson } from 'components/playlist/utils';
 import User from 'components/User';
 import { GetServerSideProps, NextPage } from 'next';
 import { getUser, verifySession } from 'server/firebase-admin';
-import { UserInfo } from 'server/models';
+import { PlaylistInfo, UserInfo } from 'server/models';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -38,15 +42,20 @@ const IndexPage: NextPage<{
       </Grid>
       <Grid item>{user ? <User user={user} /> : <Login />}</Grid>
       {user && (
-        <>
-          <Grid item>
-            <Search />
-          </Grid>
-          <Grid item>
-            <Playlist />
-          </Grid>
-          <CreatePlaylist />
-        </>
+        <Grid item>
+          <Button
+            variant="contained"
+            color="secondary"
+            size="large"
+            fullWidth
+            onClick={async (): Promise<void> => {
+              const id = (await fetchJson<PlaylistInfo>('/api/create')).id;
+              window.location.assign(`/edit/${id}`);
+            }}
+          >
+            Create
+          </Button>
+        </Grid>
       )}
     </Grid>
   );

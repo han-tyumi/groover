@@ -1,17 +1,8 @@
-import cryptoRandomString from 'crypto-random-string';
 import HttpStatus from 'http-status-codes';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { basicConverter } from 'server/firebase';
-import { firestore, verifySession } from 'server/firebase-admin';
+import { verifySession } from 'server/firebase-admin';
 import { signIn } from 'server/spotify-api';
 import { asString } from 'server/utils';
-
-export interface PlaylistInfo {
-  id: string;
-  uid: string;
-  url: string;
-  name: string;
-}
 
 /**
  * Creates a new collaborative playlist for the user.
@@ -28,6 +19,7 @@ export default async function (
     const spotifyApi = await signIn(uid);
     const name = asString(query.name);
 
+    // create playlist
     const playlist = (
       await spotifyApi.createPlaylist(uid, name, {
         description: 'Created with Groover.',
@@ -36,32 +28,13 @@ export default async function (
       })
     ).body;
 
-    const playlists = firestore.collection('playlist');
-    const urls = await playlists.listDocuments();
-    let url: string;
-    do {
-      url = cryptoRandomString({ length: 10, type: 'url-safe' });
-    } while (urls.find((doc) => doc.id === url));
-
-    const playlistInfo: PlaylistInfo = {
-      id: playlist.id,
-      uid,
-      url,
-      name,
-    };
-    playlists
-      .doc(url)
-      .withConverter(basicConverter<PlaylistInfo>())
-      .set(playlistInfo);
-
+    // add tracks if sent
     if (body instanceof Array) {
       await spotifyApi.addTracksToPlaylist(
         playlist.id,
         (body as SpotifyApi.TrackObjectFull[]).map((t) => t.uri),
       );
     }
-
-    res.json(playlistInfo);
   } catch (error) {
     res.status(HttpStatus.BAD_REQUEST).send(error.toString());
   }
