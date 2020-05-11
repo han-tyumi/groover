@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import { useFirestore, useFirestoreConnect } from 'react-redux-firebase';
 import { RootState } from 'store/rootReducer';
 import { actionIcon, icons, trackColumns, TrackTableData } from './models';
-import { delay, unwrapActionData, wrapTableData } from './utils';
+import { unwrapActionData, useActionExecutor, wrapTableData } from './utils';
 
 /**
  * Represents a Spotify playlist.
@@ -24,23 +24,15 @@ const Playlist: React.FunctionComponent<{ id: string }> = ({ id }) => {
   ) as SpotifyApi.TrackObjectFull[] | undefined;
   const firestore = useFirestore();
   const { enqueueSnackbar } = useSnackbar();
+  const executor = useActionExecutor();
 
   const tableRef = createRef<MaterialTable<TrackTableData>>();
 
   const removeAction: Action<TrackTableData> = {
     tooltip: 'Remove',
     icon: actionIcon(RemoveCircle),
-    onClick: async (_event, data): Promise<void> => {
-      /** @todo Try refactoring this pattern. */
-      const cancelAction = delay(
-        () =>
-          enqueueSnackbar('Removing taking longer than expected...', {
-            variant: 'info',
-          }),
-        1000,
-      );
-
-      try {
+    onClick: (_event, data): void =>
+      void executor('Removing', async () => {
         // remove selected tracks from firestore
         const removed = unwrapActionData(data);
         await firestore
@@ -57,12 +49,7 @@ const Playlist: React.FunctionComponent<{ id: string }> = ({ id }) => {
             variant: 'info',
           },
         );
-      } catch (error) {
-        enqueueSnackbar(error.toString(), { variant: 'error' });
-      }
-
-      cancelAction();
-    },
+      }),
   };
 
   return (

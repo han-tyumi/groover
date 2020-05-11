@@ -5,7 +5,12 @@ import { useSnackbar } from 'notistack';
 import { createRef } from 'react';
 import { useFirestore } from 'react-redux-firebase';
 import { actionIcon, icons, trackColumns, TrackTableData } from './models';
-import { delay, fetchJson, unwrapActionData, wrapTableData } from './utils';
+import {
+  fetchJson,
+  unwrapActionData,
+  useActionExecutor,
+  wrapTableData,
+} from './utils';
 
 /**
  * Used to search for tracks within Spotify.
@@ -14,22 +19,15 @@ import { delay, fetchJson, unwrapActionData, wrapTableData } from './utils';
 const Search: React.FunctionComponent<{ id: string }> = ({ id }) => {
   const firestore = useFirestore();
   const { enqueueSnackbar } = useSnackbar();
+  const executor = useActionExecutor();
 
   const tableRef = createRef<MaterialTable<TrackTableData>>();
 
   const addAction: Action<TrackTableData> = {
     tooltip: 'Add',
     icon: actionIcon(AddBox),
-    onClick: async (_event, data): Promise<void> => {
-      const cancelAction = delay(
-        () =>
-          enqueueSnackbar('Adding taking longer than expected...', {
-            variant: 'info',
-          }),
-        1000,
-      );
-
-      try {
+    onClick: (_event, data): void =>
+      void executor('Adding', async () => {
         // add tracks to firestore
         const added = unwrapActionData(data);
         await firestore
@@ -49,12 +47,7 @@ const Search: React.FunctionComponent<{ id: string }> = ({ id }) => {
             variant: 'info',
           },
         );
-      } catch (error) {
-        enqueueSnackbar(error.toString(), { variant: 'error' });
-      }
-
-      cancelAction();
-    },
+      }),
   };
 
   return (

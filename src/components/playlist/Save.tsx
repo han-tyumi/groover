@@ -1,6 +1,5 @@
 import {
   Button,
-  CircularProgress,
   createStyles,
   Grid,
   makeStyles,
@@ -10,11 +9,10 @@ import {
 } from '@material-ui/core';
 import fetch from 'isomorphic-unfetch';
 import { useSnackbar } from 'notistack';
-import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useFirestore, useFirestoreConnect } from 'react-redux-firebase';
 import { RootState } from 'store/rootReducer';
-import { delay } from './utils';
+import { useActionExecutor } from './utils';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -33,6 +31,7 @@ const useStyles = makeStyles((theme: Theme) =>
 const Save: React.FunctionComponent<{ id: string }> = ({ id }) => {
   const classes = useStyles();
   const { enqueueSnackbar } = useSnackbar();
+  const executor = useActionExecutor();
 
   useFirestoreConnect({
     collection: 'playlist',
@@ -44,8 +43,6 @@ const Save: React.FunctionComponent<{ id: string }> = ({ id }) => {
   );
   const firestore = useFirestore();
 
-  const [loading, setLoading] = useState(false);
-
   return (
     <>
       <Grid item>
@@ -54,10 +51,9 @@ const Save: React.FunctionComponent<{ id: string }> = ({ id }) => {
             className={classes.root}
             noValidate
             autoComplete="off"
-            onSubmit={async (event): Promise<void> => {
-              event.preventDefault();
-              const cancelAction = delay(() => setLoading(true), 800);
-              try {
+            onSubmit={(event): void =>
+              void executor('Saving', async () => {
+                event.preventDefault();
                 await fetch(`/api/create/${playlist?.name}`, {
                   method: 'POST',
                   headers: {
@@ -66,12 +62,8 @@ const Save: React.FunctionComponent<{ id: string }> = ({ id }) => {
                   body: JSON.stringify(playlist?.tracks),
                 });
                 enqueueSnackbar('Created Playlist', { variant: 'success' });
-              } catch (error) {
-                enqueueSnackbar(error.toString(), { variant: 'error' });
-              }
-              cancelAction();
-              setLoading(false);
-            }}
+              })
+            }
           >
             <TextField
               className={classes.input}
@@ -93,11 +85,7 @@ const Save: React.FunctionComponent<{ id: string }> = ({ id }) => {
               variant="contained"
               disabled={!playlist?.tracks}
             >
-              {loading ? (
-                <CircularProgress size={30} color="inherit" />
-              ) : (
-                'Create'
-              )}
+              Create
             </Button>
           </form>
         </Paper>

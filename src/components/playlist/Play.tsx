@@ -2,7 +2,7 @@ import { Button, Grid, MenuItem, Select } from '@material-ui/core';
 import { useSnackbar } from 'notistack';
 import { useState } from 'react';
 import { PlaylistInfo } from 'server/models';
-import { delay, fetchJson } from './utils';
+import { fetchJson, useActionExecutor } from './utils';
 
 /**
  * Allows the user to start playback for a given playlist.
@@ -13,6 +13,7 @@ const Play: React.FunctionComponent<{
 }> = ({ playlist, devices }) => {
   const [device, setDevice] = useState(devices[0]?.id || undefined);
   const { enqueueSnackbar } = useSnackbar();
+  const executor = useActionExecutor();
 
   return (
     <>
@@ -42,16 +43,8 @@ const Play: React.FunctionComponent<{
           variant="contained"
           color="secondary"
           disabled={!device}
-          onClick={async (): Promise<void> => {
-            const cancelAction = delay(
-              () =>
-                enqueueSnackbar('Playing taking longer than expected...', {
-                  variant: 'info',
-                  persist: true,
-                }),
-              1000,
-            );
-            try {
+          onClick={(): void =>
+            void executor('Playing', async () => {
               await fetchJson<{ success: boolean }>(
                 `/api/playlist/${playlist.id}/play`,
                 {
@@ -63,11 +56,8 @@ const Play: React.FunctionComponent<{
                 },
               );
               enqueueSnackbar('Playback Started', { variant: 'info' });
-            } catch (error) {
-              enqueueSnackbar(error.toString(), { variant: 'error' });
-            }
-            cancelAction();
-          }}
+            })
+          }
         >
           Play
         </Button>

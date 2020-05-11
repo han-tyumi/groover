@@ -1,4 +1,5 @@
 import fetch from 'isomorphic-unfetch';
+import { useSnackbar } from 'notistack';
 
 /** Wraps material-table data so that properties added by the library do not affect data immutability. */
 export type TableDataWrapper<T> = { data: T };
@@ -34,12 +35,56 @@ export const fetchJson = async <T>(
 
 /**
  * Delays an action by a number of milliseconds.
+ * The action can also return a cleanup function to be called when the action is
+ * cancelled.
  *
  * @param action The action to delay.
  * @param ms The number of milliseconds to delay the action.
  * @returns A function that can be called to cancel the action.
  */
-export const delay = (action: () => void, ms: number): (() => void) => {
-  const start = window.setTimeout(() => action(), ms);
-  return (): void => void window.clearTimeout(start);
+export const delay = (
+  action: () => void | (() => void),
+  ms: number,
+): (() => void) => {
+  let cleanup: void | (() => void);
+  const start = window.setTimeout(() => (cleanup = action()), ms);
+  return (): void => {
+    window.clearTimeout(start);
+    cleanup && cleanup();
+  };
+};
+
+/**
+ * Provides a function that executes the given action and reports any errors and
+ * when the action is taking longer then expected.
+ */
+export const useActionExecutor = (): ((
+  name: string,
+  action: () => Promise<void>,
+) => Promise<void>) => {
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+
+  /**
+   * Executes the given action and reports any errors and
+   * when the action is taking longer then expected.
+   * @param name The name of the action.
+   * @param action The action to execute.
+   */
+  return async (name, action): Promise<void> => {
+    const cancelAction = delay(() => {
+      const id = enqueueSnackbar(`${name} taking longer than expected...`, {
+        variant: 'info',
+        persist: true,
+      });
+      return (): void => void closeSnackbar(id);
+    }, 1000);
+
+    try {
+      await action();
+    } catch (error) {
+      enqueueSnackbar(error.toString(), { variant: 'error' });
+    }
+
+    cancelAction();
+  };
 };
