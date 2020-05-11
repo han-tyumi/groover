@@ -1,17 +1,17 @@
 import { Button, Grid, MenuItem, Select } from '@material-ui/core';
+import { fetchJson, useActionExecutor } from 'components/utils';
 import { useSnackbar } from 'notistack';
 import { useState } from 'react';
 import { PlaylistInfo } from 'server/models';
-import { fetchJson, useActionExecutor } from './utils';
 
 /**
  * Allows the user to start playback for a given playlist.
  */
 const Play: React.FunctionComponent<{
   playlist: PlaylistInfo;
-  devices: SpotifyApi.UserDevice[];
-}> = ({ playlist, devices }) => {
-  const [device, setDevice] = useState(devices[0]?.id || undefined);
+}> = ({ playlist }) => {
+  const [devices, setDevices] = useState<SpotifyApi.UserDevice[]>([]);
+  const [deviceId, setDeviceId] = useState<string>();
   const { enqueueSnackbar } = useSnackbar();
   const executor = useActionExecutor();
 
@@ -22,9 +22,14 @@ const Play: React.FunctionComponent<{
           fullWidth
           displayEmpty
           variant="outlined"
-          value={device}
+          value={deviceId}
+          onOpen={async (): Promise<void> =>
+            executor('Fetching devices', async () =>
+              setDevices(await fetchJson('/api/devices')),
+            )
+          }
           onChange={(event): void =>
-            void setDevice(event.target.value as string | undefined)
+            void setDeviceId(event.target.value as string | undefined)
           }
         >
           <MenuItem key={undefined} value={undefined} disabled>
@@ -42,7 +47,7 @@ const Play: React.FunctionComponent<{
           fullWidth
           variant="contained"
           color="secondary"
-          disabled={!device}
+          disabled={!deviceId}
           onClick={(): void =>
             void executor('Playing', async () => {
               await fetchJson<{ success: boolean }>(
@@ -52,7 +57,7 @@ const Play: React.FunctionComponent<{
                   headers: {
                     'Content-Type': 'application/json',
                   },
-                  body: JSON.stringify({ device }),
+                  body: JSON.stringify({ deviceId }),
                 },
               );
               enqueueSnackbar('Playback Started', { variant: 'info' });

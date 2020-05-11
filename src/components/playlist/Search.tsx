@@ -1,16 +1,16 @@
 import { AddBox } from '@material-ui/icons';
+import {
+  fetchJson,
+  unwrapActionData,
+  useActionExecutor,
+  wrapTableData,
+} from 'components/utils';
 import firebase from 'firebase';
 import MaterialTable, { Action, QueryResult } from 'material-table';
 import { useSnackbar } from 'notistack';
 import { createRef } from 'react';
 import { useFirestore } from 'react-redux-firebase';
 import { actionIcon, icons, trackColumns, TrackTableData } from './models';
-import {
-  fetchJson,
-  unwrapActionData,
-  useActionExecutor,
-  wrapTableData,
-} from './utils';
 
 /**
  * Used to search for tracks within Spotify.

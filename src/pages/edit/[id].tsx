@@ -9,7 +9,6 @@ import { GetServerSideProps, NextPage } from 'next';
 import { basicConverter } from 'server/firebase';
 import { firestore, getUser, verifySession } from 'server/firebase-admin';
 import { PlaylistInfo, UserInfo } from 'server/models';
-import { signIn } from 'server/spotify-api';
 
 /**
  * Allows the user to edit their playlist.
@@ -17,8 +16,7 @@ import { signIn } from 'server/spotify-api';
 const EditPage: NextPage<{
   user: UserInfo;
   playlist: PlaylistInfo;
-  devices: SpotifyApi.UserDevice[];
-}> = ({ user, playlist, devices }) => {
+}> = ({ user, playlist }) => {
   return (
     <Title>
       <Grid item xs={12}>
@@ -30,7 +28,7 @@ const EditPage: NextPage<{
       <Grid item xs={12}>
         <Playlist id={playlist.id} />
       </Grid>
-      <Play playlist={playlist} devices={devices} />
+      <Play playlist={playlist} />
     </Title>
   );
 };
@@ -39,7 +37,6 @@ export const getServerSideProps: GetServerSideProps<
   {
     user?: UserInfo;
     playlist?: PlaylistInfo;
-    devices?: SpotifyApi.UserDevice[];
   },
   { id: string }
 > = async ({ req, res, params }) => {
@@ -69,11 +66,7 @@ export const getServerSideProps: GetServerSideProps<
 
     const user = await getUser(uid);
 
-    // fetch devices
-    const spotifyApi = await signIn(uid);
-    const devices = await (await spotifyApi.getMyDevices()).body.devices;
-
-    return { props: { user, playlist, devices } };
+    return { props: { user, playlist } };
   } catch (error) {
     res.writeHead(HttpStatus.MOVED_TEMPORARILY, { Location: '/' }).end();
     return { props: {} };

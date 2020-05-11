@@ -13,14 +13,10 @@
     },
     {
       "type": "node",
-      "request": "launch",
+      "request": "attach",
       "name": "Next: Node",
-      "runtimeArgs": ["--inspect", "server.js"],
-      "port": 9229,
-      "console": "integratedTerminal",
-      "env": {
-        "NODE_EXTRA_CA_CERTS": "./keys/rootCA.pem"
-      }
+      "skipFiles": ["<node_internals>/**"],
+      "port": 9229
     }
   ],
   "compounds": [

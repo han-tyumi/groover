@@ -8,13 +8,11 @@ import { GetServerSideProps, NextPage } from 'next';
 import { basicConverter } from 'server/firebase';
 import { firestore, getUser } from 'server/firebase-admin';
 import { PlaylistInfo, UserInfo } from 'server/models';
-import { signIn } from 'server/spotify-api';
 
 const PlaylistPage: NextPage<{
   user: UserInfo;
   playlist: PlaylistInfo;
-  devices: SpotifyApi.UserDevice[];
-}> = ({ user, playlist, devices }) => {
+}> = ({ user, playlist }) => {
   return (
     <Title>
       <Grid item xs={12}>
@@ -23,7 +21,7 @@ const PlaylistPage: NextPage<{
       <Grid item xs={12}>
         <Playlist id={playlist.id} />
       </Grid>
-      <Play playlist={playlist} devices={devices} />
+      <Play playlist={playlist} />
     </Title>
   );
 };
@@ -35,7 +33,7 @@ export const getServerSideProps: GetServerSideProps<
     devices?: SpotifyApi.UserDevice[];
   },
   { id: string }
-> = async ({ req, res, params }) => {
+> = async ({ res, params }) => {
   try {
     const id = params?.id;
     if (!id) {
@@ -56,11 +54,7 @@ export const getServerSideProps: GetServerSideProps<
 
     const user = await getUser(playlist.uid);
 
-    // fetch devices
-    const spotifyApi = await signIn(req);
-    const devices = await (await spotifyApi.getMyDevices()).body.devices;
-
-    return { props: { user, playlist, devices } };
+    return { props: { user, playlist } };
   } catch (error) {
     res.writeHead(HttpStatus.MOVED_TEMPORARILY, { Location: '/' }).end();
     return { props: {} };

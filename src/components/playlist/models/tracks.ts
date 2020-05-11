@@ -1,5 +1,5 @@
+import { TableDataWrapper } from 'components/utils';
 import { Column } from 'material-table';
-import { TableDataWrapper } from '../utils';
 
 /** Data to be used by material-tables displaying Spotify track information. */
 export type TrackTableData = TableDataWrapper<SpotifyApi.TrackObjectFull>;

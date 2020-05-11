@@ -1,8 +1,8 @@
 import { Button, Grid } from '@material-ui/core';
 import Login from 'components/Login';
-import { fetchJson } from 'components/playlist/utils';
 import Title from 'components/Title';
 import User from 'components/User';
+import { fetchJson } from 'components/utils';
 import { GetServerSideProps, NextPage } from 'next';
 import { getUser, verifySession } from 'server/firebase-admin';
 import { PlaylistInfo, UserInfo } from 'server/models';

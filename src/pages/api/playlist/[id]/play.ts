@@ -81,7 +81,7 @@ export default async function (
     }
 
     // start playback
-    play(playlist, spotifyApi, body.device);
+    play(playlist, spotifyApi, body.deviceId);
 
     res.json({ success: true });
   } catch (error) {

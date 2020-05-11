@@ -7,12 +7,12 @@ import {
   TextField,
   Theme,
 } from '@material-ui/core';
+import { useActionExecutor } from 'components/utils';
 import fetch from 'isomorphic-unfetch';
 import { useSnackbar } from 'notistack';
 import { useSelector } from 'react-redux';
 import { useFirestore, useFirestoreConnect } from 'react-redux-firebase';
 import { RootState } from 'store/rootReducer';
-import { useActionExecutor } from './utils';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -37,7 +37,6 @@ const Save: React.FunctionComponent<{ id: string }> = ({ id }) => {
     collection: 'playlist',
     doc: id,
   });
-  /** @todo Double check types for playlist collection when undefined (might actually be null). */
   const playlist = useSelector(
     (state: RootState) => state.firestore.data.playlist?.[id],
   );
