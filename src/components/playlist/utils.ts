@@ -61,6 +61,7 @@ export const delay = (
 export const useActionExecutor = (): ((
   name: string,
   action: () => Promise<void>,
+  expected?: number,
 ) => Promise<void>) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
@@ -70,21 +71,22 @@ export const useActionExecutor = (): ((
    * @param name The name of the action.
    * @param action The action to execute.
    */
-  return async (name, action): Promise<void> => {
-    const cancelAction = delay(() => {
+  return async (name, action, expected = 1000): Promise<void> => {
+    const cancel = delay(() => {
       const id = enqueueSnackbar(`${name} taking longer than expected...`, {
         variant: 'info',
         persist: true,
       });
+
       return (): void => void closeSnackbar(id);
-    }, 1000);
+    }, expected);
 
     try {
       await action();
     } catch (error) {
       enqueueSnackbar(error.toString(), { variant: 'error' });
+    } finally {
+      cancel();
     }
-
-    cancelAction();
   };
 };

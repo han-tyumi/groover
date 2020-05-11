@@ -32,7 +32,6 @@ export default class MyApp extends App {
                 <SnackbarProvider
                   anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
                   autoHideDuration={1000}
-                  maxSnack={1}
                   dense
                 >
                   <Component {...pageProps} />
