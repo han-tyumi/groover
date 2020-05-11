@@ -1,6 +1,7 @@
-import { createStyles, Grid, makeStyles, Typography } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 import Play from 'components/playlist/Play';
 import Playlist from 'components/playlist/Playlist';
+import Title from 'components/Title';
 import User from 'components/User';
 import HttpStatus from 'http-status-codes';
 import { GetServerSideProps, NextPage } from 'next';
@@ -9,44 +10,21 @@ import { firestore, getUser } from 'server/firebase-admin';
 import { PlaylistInfo, UserInfo } from 'server/models';
 import { signIn } from 'server/spotify-api';
 
-const useStyles = makeStyles((theme) =>
-  createStyles({
-    subtitle: {
-      marginTop: -theme.spacing(2),
-      marginLeft: theme.spacing(4),
-    },
-  }),
-);
-
 const PlaylistPage: NextPage<{
   user: UserInfo;
   playlist: PlaylistInfo;
   devices: SpotifyApi.UserDevice[];
 }> = ({ user, playlist, devices }) => {
-  const classes = useStyles();
-
   return (
-    <Grid container direction="column" spacing={3}>
-      <Grid item>
-        <Typography variant="h1" color="primary">
-          <b>Groover</b>
-        </Typography>
-        <Typography
-          className={classes.subtitle}
-          variant="subtitle1"
-          color="secondary"
-        >
-          Collaborate and listen
-        </Typography>
-      </Grid>
-      <Grid item>
+    <Title>
+      <Grid item xs={12}>
         <User user={user} />
       </Grid>
-      <Grid item>
+      <Grid item xs={12}>
         <Playlist id={playlist.id} />
       </Grid>
       <Play playlist={playlist} devices={devices} />
-    </Grid>
+    </Title>
   );
 };
 

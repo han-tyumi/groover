@@ -1,48 +1,22 @@
-import {
-  Button,
-  createStyles,
-  Grid,
-  makeStyles,
-  Typography,
-} from '@material-ui/core';
+import { Button, Grid } from '@material-ui/core';
 import Login from 'components/Login';
 import { fetchJson } from 'components/playlist/utils';
+import Title from 'components/Title';
 import User from 'components/User';
 import { GetServerSideProps, NextPage } from 'next';
 import { getUser, verifySession } from 'server/firebase-admin';
 import { PlaylistInfo, UserInfo } from 'server/models';
 
-const useStyles = makeStyles((theme) =>
-  createStyles({
-    subtitle: {
-      marginTop: -theme.spacing(2),
-      marginLeft: theme.spacing(4),
-    },
-  }),
-);
-
 const IndexPage: NextPage<{
   user?: UserInfo;
 }> = ({ user }) => {
-  const classes = useStyles();
-
   return (
-    <Grid container direction="column" spacing={3}>
-      <Grid item>
-        <Typography variant="h1" color="primary">
-          <b>Groover</b>
-        </Typography>
-        <Typography
-          className={classes.subtitle}
-          variant="subtitle1"
-          color="secondary"
-        >
-          Collaborate and listen
-        </Typography>
+    <Title>
+      <Grid item xs={12}>
+        {user ? <User user={user} /> : <Login />}
       </Grid>
-      <Grid item>{user ? <User user={user} /> : <Login />}</Grid>
       {user && (
-        <Grid item>
+        <Grid item xs={12}>
           <Button
             variant="contained"
             color="secondary"
@@ -57,7 +31,7 @@ const IndexPage: NextPage<{
           </Button>
         </Grid>
       )}
-    </Grid>
+    </Title>
   );
 };
 

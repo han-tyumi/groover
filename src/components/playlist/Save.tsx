@@ -16,7 +16,6 @@ import { useFirestore, useFirestoreConnect } from 'react-redux-firebase';
 import { RootState } from 'store/rootReducer';
 import { delay } from './utils';
 
-/** @todo Refactor tp use HOC or wrapper for title. */
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
