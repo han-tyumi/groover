@@ -1,5 +1,8 @@
+import { IconButton } from '@material-ui/core';
+import { Close } from '@material-ui/icons';
 import fetch from 'isomorphic-unfetch';
 import { useSnackbar } from 'notistack';
+import React from 'react';
 
 /** Wraps material-table data so that properties added by the library do not affect data immutability. */
 export type TableDataWrapper<T> = { data: T };
@@ -84,7 +87,17 @@ export const useActionExecutor = (): ((
     try {
       await action();
     } catch (error) {
-      enqueueSnackbar(error.toString(), { variant: 'error' });
+      enqueueSnackbar(error.toString(), {
+        variant: 'error',
+        persist: true,
+        // eslint-disable-next-line react/display-name
+        action: (key) =>
+          React.createElement(
+            IconButton,
+            { color: 'inherit', onClick: () => closeSnackbar(key) },
+            React.createElement(Close),
+          ),
+      });
     } finally {
       cancel();
     }
