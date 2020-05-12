@@ -1,11 +1,13 @@
 import HttpStatus from 'http-status-codes';
+import { sample } from 'lodash';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Observable } from 'rxjs';
+import { takeWhile } from 'rxjs/operators';
 import { basicConverter } from 'server/firebase';
 import { firestore } from 'server/firebase-admin';
 import { PlaylistInfo } from 'server/models';
 import { signIn } from 'server/spotify-api';
-import { asString } from 'server/utils';
+import { asString, sleep } from 'server/utils';
 import SpotifyWebApi from 'spotify-web-api-node';
 
 /**
@@ -27,6 +29,8 @@ function fromDoc<T>(
   });
 }
 
+export const playing = new Map<string, boolean>();
+
 /**
  * Starts playback for a specified playlist.
  * @param playlist The playlist document reference.
@@ -38,23 +42,40 @@ async function play(
   spotifyApi: SpotifyWebApi,
   deviceId?: string,
 ): Promise<void> {
-  fromDoc(playlist).subscribe(async (snapshot) => {
-    const tracks = snapshot.get('tracks') as
+  const id = playlist.id;
+  if (playing.get(id)) {
+    return;
+  }
+
+  playing.set(id, true);
+
+  try {
+    let tracks = (await playlist.get()).get('tracks') as
       | SpotifyApi.TrackObjectFull[]
       | undefined;
 
-    if (tracks) {
-      try {
-        await spotifyApi.play({
-          // eslint-disable-next-line @typescript-eslint/camelcase
-          device_id: deviceId,
-          uris: tracks.map((t) => t.uri),
-        });
-      } catch (error) {
-        console.error(error);
-      }
+    fromDoc(playlist)
+      .pipe(takeWhile(() => !!tracks?.length))
+      .subscribe((snapshot) => (tracks = snapshot.get('tracks')));
+
+    while (tracks?.length && playing.get(id)) {
+      const next = sample(tracks) as SpotifyApi.TrackObjectFull;
+
+      console.log(`Playing ${next.name}`);
+      await Promise.all([
+        playlist.update({
+          tracks: tracks.filter((t) => t.id !== next.id),
+        }),
+
+        // eslint-disable-next-line @typescript-eslint/camelcase
+        spotifyApi.play({ device_id: deviceId, uris: [next.uri] }),
+      ]);
+
+      await sleep(next.duration_ms);
     }
-  });
+  } finally {
+    playing.set(id, false);
+  }
 }
 
 /**

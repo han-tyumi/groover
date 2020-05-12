@@ -12,6 +12,7 @@ const Play: React.FunctionComponent<{
 }> = ({ playlist }) => {
   const [devices, setDevices] = useState<SpotifyApi.UserDevice[]>([]);
   const [deviceId, setDeviceId] = useState<string>();
+  const [playing, setPlaying] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
   const executor = useActionExecutor();
 
@@ -48,10 +49,10 @@ const Play: React.FunctionComponent<{
           variant="contained"
           color="secondary"
           disabled={!deviceId}
-          onClick={(): void =>
-            void executor('Playing', async () => {
+          onClick={(): void => {
+            executor(playing ? 'Pausing' : 'Playing', async () => {
               await fetchJson<{ success: boolean }>(
-                `/api/playlist/${playlist.id}/play`,
+                `/api/playlist/${playlist.id}/${playing ? 'pause' : 'play'}`,
                 {
                   method: 'POST',
                   headers: {
@@ -60,11 +61,14 @@ const Play: React.FunctionComponent<{
                   body: JSON.stringify({ deviceId }),
                 },
               );
-              enqueueSnackbar('Playback Started', { variant: 'info' });
-            })
-          }
+              setPlaying(!playing);
+              enqueueSnackbar(playing ? 'Paused' : 'Playback Started', {
+                variant: 'info',
+              });
+            });
+          }}
         >
-          Play
+          {playing ? 'Pause' : 'Play'}
         </Button>
       </Grid>
     </>
