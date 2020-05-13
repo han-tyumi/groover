@@ -1,5 +1,6 @@
 import { Button, Grid } from '@material-ui/core';
 import Login from 'components/Login';
+import Playlists from 'components/playlist/Playlists';
 import Title from 'components/Title';
 import User from 'components/User';
 import { fetchJson } from 'components/utils';
@@ -16,20 +17,25 @@ const IndexPage: NextPage<{
         {user ? <User user={user} /> : <Login />}
       </Grid>
       {user && (
-        <Grid item xs={12}>
-          <Button
-            variant="contained"
-            color="secondary"
-            size="large"
-            fullWidth
-            onClick={async (): Promise<void> => {
-              const id = (await fetchJson<PlaylistInfo>('/api/create')).id;
-              window.location.assign(`/edit/${id}`);
-            }}
-          >
-            Create
-          </Button>
-        </Grid>
+        <>
+          <Grid item xs={12}>
+            <Button
+              variant="contained"
+              color="secondary"
+              size="large"
+              fullWidth
+              onClick={async (): Promise<void> => {
+                const id = (await fetchJson<PlaylistInfo>('/api/create')).id;
+                window.location.assign(`/edit/${id}`);
+              }}
+            >
+              Create
+            </Button>
+          </Grid>
+          <Grid item xs={12}>
+            <Playlists uid={user.uid} />
+          </Grid>
+        </>
       )}
     </Title>
   );
