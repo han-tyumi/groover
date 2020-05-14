@@ -2,6 +2,9 @@ import { createStyles, Grid, makeStyles, Typography } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
+    title: {
+      textDecoration: 'none',
+    },
     subtitle: {
       marginTop: -theme.spacing(2),
       marginLeft: theme.spacing(4),
@@ -18,7 +21,13 @@ const Title: React.FunctionComponent = ({ children }) => {
   return (
     <Grid container alignItems="center" spacing={3}>
       <Grid item xs={12}>
-        <Typography variant="h1" color="primary">
+        <Typography
+          className={classes.title}
+          variant="h1"
+          color="primary"
+          component="a"
+          href="/"
+        >
           <b>Groover</b>
         </Typography>
         <Typography

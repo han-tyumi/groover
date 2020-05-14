@@ -1,6 +1,5 @@
 import { Button, Grid, MenuItem, Select } from '@material-ui/core';
 import { fetchJson, useActionExecutor } from 'components/utils';
-import { useSnackbar } from 'notistack';
 import { useState } from 'react';
 import { PlaylistInfo } from 'server/models';
 
@@ -13,7 +12,6 @@ const Play: React.FunctionComponent<{
   const [devices, setDevices] = useState<SpotifyApi.UserDevice[]>([]);
   const [deviceId, setDeviceId] = useState<string>();
   const [playing, setPlaying] = useState(false);
-  const { enqueueSnackbar } = useSnackbar();
   const executor = useActionExecutor();
 
   return (
@@ -25,9 +23,10 @@ const Play: React.FunctionComponent<{
           variant="outlined"
           value={deviceId}
           onOpen={async (): Promise<void> =>
-            executor('Fetching devices', async () =>
-              setDevices(await fetchJson('/api/devices')),
-            )
+            executor({
+              verb: 'Fetching devices',
+              action: async () => setDevices(await fetchJson('/api/devices')),
+            })
           }
           onChange={(event): void =>
             void setDeviceId(event.target.value as string | undefined)
@@ -50,21 +49,23 @@ const Play: React.FunctionComponent<{
           color="secondary"
           disabled={!deviceId}
           onClick={(): void => {
-            executor(playing ? 'Pausing' : 'Playing', async () => {
-              await fetchJson<{ success: boolean }>(
-                `/api/playlist/${playlist.id}/${playing ? 'pause' : 'play'}`,
-                {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
+            executor({
+              verb: playing ? 'Pausing' : 'Playing',
+              action: async () => {
+                await fetchJson<{ success: boolean }>(
+                  `/api/playlist/${playlist.id}/${playing ? 'pause' : 'play'}`,
+                  {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ deviceId }),
                   },
-                  body: JSON.stringify({ deviceId }),
-                },
-              );
-              setPlaying(!playing);
-              enqueueSnackbar(playing ? 'Paused' : 'Playback Started', {
-                variant: 'info',
-              });
+                );
+                setPlaying(!playing);
+                return playing ? 'Paused' : 'Playback Started';
+              },
+              variant: 'info',
             });
           }}
         >

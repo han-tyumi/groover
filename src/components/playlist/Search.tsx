@@ -7,7 +7,6 @@ import {
 } from 'components/utils';
 import firebase from 'firebase';
 import MaterialTable, { Action, QueryResult } from 'material-table';
-import { useSnackbar } from 'notistack';
 import { createRef } from 'react';
 import { useFirestore } from 'react-redux-firebase';
 import { actionIcon, icons, trackColumns, TrackTableData } from './models';
@@ -18,7 +17,6 @@ import { actionIcon, icons, trackColumns, TrackTableData } from './models';
  */
 const Search: React.FunctionComponent<{ id: string }> = ({ id }) => {
   const firestore = useFirestore();
-  const { enqueueSnackbar } = useSnackbar();
   const executor = useActionExecutor();
 
   const tableRef = createRef<MaterialTable<TrackTableData>>();
@@ -27,26 +25,27 @@ const Search: React.FunctionComponent<{ id: string }> = ({ id }) => {
     tooltip: 'Add',
     icon: actionIcon(AddBox),
     onClick: (_event, data): void =>
-      void executor('Adding', async () => {
-        // add tracks to firestore
-        const added = unwrapActionData(data);
-        await firestore
-          .collection('playlist')
-          .doc(id)
-          .update({
-            tracks: firebase.firestore.FieldValue.arrayUnion(...added),
-          });
+      void executor({
+        verb: 'Adding',
+        action: async () => {
+          // add tracks to firestore
+          const added = unwrapActionData(data);
+          await firestore
+            .collection('playlist')
+            .doc(id)
+            .update({
+              tracks: firebase.firestore.FieldValue.arrayUnion(...added),
+            });
 
-        // clear any selection
-        tableRef.current?.onAllSelected(false);
+          // clear any selection
+          tableRef.current?.onAllSelected(false);
 
-        const amount = added.length;
-        enqueueSnackbar(
-          'Added ' + (amount > 1 ? `${amount} Tracks` : `${added[0].name}`),
-          {
-            variant: 'info',
-          },
-        );
+          const amount = added.length;
+          return (
+            'Added ' + (amount > 1 ? `${amount} Tracks` : `${added[0].name}`)
+          );
+        },
+        variant: 'info',
       }),
   };
 

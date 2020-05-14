@@ -9,7 +9,6 @@ import {
 } from '@material-ui/core';
 import { useActionExecutor } from 'components/utils';
 import fetch from 'isomorphic-unfetch';
-import { useSnackbar } from 'notistack';
 import { useSelector } from 'react-redux';
 import { useFirestore, useFirestoreConnect } from 'react-redux-firebase';
 import { RootState } from 'store/rootReducer';
@@ -30,7 +29,6 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const Save: React.FunctionComponent<{ id: string }> = ({ id }) => {
   const classes = useStyles();
-  const { enqueueSnackbar } = useSnackbar();
   const executor = useActionExecutor();
 
   useFirestoreConnect({
@@ -51,16 +49,19 @@ const Save: React.FunctionComponent<{ id: string }> = ({ id }) => {
             noValidate
             autoComplete="off"
             onSubmit={(event): void =>
-              void executor('Saving', async () => {
-                event.preventDefault();
-                await fetch(`/api/create/${playlist?.name}`, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify(playlist?.tracks),
-                });
-                enqueueSnackbar('Created Playlist', { variant: 'success' });
+              void executor({
+                verb: 'Saving',
+                action: async () => {
+                  event.preventDefault();
+                  await fetch(`/api/create/${playlist?.name}`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(playlist?.tracks),
+                  });
+                  return 'Created Playlist';
+                },
               })
             }
           >

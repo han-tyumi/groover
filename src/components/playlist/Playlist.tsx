@@ -6,7 +6,6 @@ import {
 } from 'components/utils';
 import firebase from 'firebase';
 import MaterialTable, { Action } from 'material-table';
-import { useSnackbar } from 'notistack';
 import { createRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useFirestore, useFirestoreConnect } from 'react-redux-firebase';
@@ -17,7 +16,10 @@ import { actionIcon, icons, trackColumns, TrackTableData } from './models';
  * Represents a Spotify playlist.
  * Tracks are added through firestore and can be removed through this component.
  */
-const Playlist: React.FunctionComponent<{ id: string }> = ({ id }) => {
+const Playlist: React.FunctionComponent<{ id: string; readonly?: boolean }> = ({
+  id,
+  readonly,
+}) => {
   useFirestoreConnect({
     collection: 'playlist',
     doc: id,
@@ -26,7 +28,6 @@ const Playlist: React.FunctionComponent<{ id: string }> = ({ id }) => {
     (state: RootState) => state.firestore.data.playlist?.[id]?.tracks,
   );
   const firestore = useFirestore();
-  const { enqueueSnackbar } = useSnackbar();
   const executor = useActionExecutor();
 
   const tableRef = createRef<MaterialTable<TrackTableData>>();
@@ -35,23 +36,25 @@ const Playlist: React.FunctionComponent<{ id: string }> = ({ id }) => {
     tooltip: 'Remove',
     icon: actionIcon(RemoveCircle),
     onClick: (_event, data): void =>
-      void executor('Removing', async () => {
-        // remove selected tracks from firestore
-        const removed = unwrapActionData(data);
-        await firestore
-          .collection('playlist')
-          .doc(id)
-          .update({
-            tracks: firebase.firestore.FieldValue.arrayRemove(...removed),
-          });
+      void executor({
+        verb: 'Removing',
+        action: async () => {
+          // remove selected tracks from firestore
+          const removed = unwrapActionData(data);
+          await firestore
+            .collection('playlist')
+            .doc(id)
+            .update({
+              tracks: firebase.firestore.FieldValue.arrayRemove(...removed),
+            });
 
-        const amount = removed.length;
-        enqueueSnackbar(
-          'Removed ' + (amount > 1 ? `${amount} Tracks` : `${removed[0].name}`),
-          {
-            variant: 'info',
-          },
-        );
+          const amount = removed.length;
+          return (
+            'Removed ' +
+            (amount > 1 ? `${amount} Tracks` : `${removed[0].name}`)
+          );
+        },
+        variant: 'info',
       }),
   };
 
@@ -61,7 +64,7 @@ const Playlist: React.FunctionComponent<{ id: string }> = ({ id }) => {
       icons={icons}
       options={{
         draggable: false,
-        selection: true,
+        selection: !readonly,
         searchFieldAlignment: 'left',
         minBodyHeight: 500,
         maxBodyHeight: 500,
@@ -70,16 +73,20 @@ const Playlist: React.FunctionComponent<{ id: string }> = ({ id }) => {
       columns={trackColumns}
       data={wrapTableData(tracks || [])}
       tableRef={tableRef}
-      actions={[
-        {
-          position: 'row',
-          ...removeAction,
-        },
-        {
-          position: 'toolbarOnSelect',
-          ...removeAction,
-        },
-      ]}
+      actions={
+        readonly
+          ? []
+          : [
+              {
+                position: 'row',
+                ...removeAction,
+              },
+              {
+                position: 'toolbarOnSelect',
+                ...removeAction,
+              },
+            ]
+      }
     />
   );
 };

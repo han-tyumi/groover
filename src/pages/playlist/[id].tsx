@@ -1,6 +1,6 @@
 import { Grid } from '@material-ui/core';
-import Play from 'components/playlist/Play';
 import Playlist from 'components/playlist/Playlist';
+import Search from 'components/playlist/Search';
 import Title from 'components/Title';
 import User from 'components/User';
 import HttpStatus from 'http-status-codes';
@@ -18,10 +18,12 @@ const PlaylistPage: NextPage<{
       <Grid item xs={12}>
         <User user={user} />
       </Grid>
-      <Grid item xs={12}>
-        <Playlist id={playlist.id} />
+      <Grid item xs={12} lg={6}>
+        <Search id={playlist.id} />
       </Grid>
-      <Play playlist={playlist} />
+      <Grid item xs={12} lg={6}>
+        <Playlist id={playlist.id} readonly />
+      </Grid>
     </Title>
   );
 };
@@ -30,7 +32,6 @@ export const getServerSideProps: GetServerSideProps<
   {
     user?: UserInfo;
     playlist?: PlaylistInfo;
-    devices?: SpotifyApi.UserDevice[];
   },
   { id: string }
 > = async ({ res, params }) => {

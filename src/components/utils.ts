@@ -1,7 +1,7 @@
 import { IconButton } from '@material-ui/core';
 import { Close } from '@material-ui/icons';
 import fetch from 'isomorphic-unfetch';
-import { useSnackbar } from 'notistack';
+import { OptionsObject, useSnackbar } from 'notistack';
 import React from 'react';
 
 /** Wraps material-table data so that properties added by the library do not affect data immutability. */
@@ -57,26 +57,42 @@ export const delay = (
   };
 };
 
+interface ActionExecutorOptions {
+  /** The action (verb; beginning of sentence). */
+  verb: string;
+
+  /** The action to execute. Can return a message to be displayed on success. */
+  action: () => Promise<void | string> | void | string;
+
+  /** Snackbar variant to use on success. */
+  variant?: OptionsObject['variant'];
+
+  /** Maximum amount of time the action is expected to take. */
+  expected?: number;
+}
+
 /**
  * Provides a function that executes the given action and reports any errors and
  * when the action is taking longer then expected.
  */
 export const useActionExecutor = (): ((
-  name: string,
-  action: () => Promise<void>,
-  expected?: number,
+  options: ActionExecutorOptions,
 ) => Promise<void>) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   /**
    * Executes the given action and reports any errors and
    * when the action is taking longer then expected.
-   * @param name The name of the action.
-   * @param action The action to execute.
+   * @param options Action executor options.
    */
-  return async (name, action, expected = 1000): Promise<void> => {
+  return async ({
+    verb,
+    action,
+    variant = 'success',
+    expected = 1000,
+  }): Promise<void> => {
     const cancel = delay(() => {
-      const id = enqueueSnackbar(`${name} taking longer than expected...`, {
+      const id = enqueueSnackbar(`${verb} taking longer than expected...`, {
         variant: 'info',
         persist: true,
       });
@@ -85,8 +101,13 @@ export const useActionExecutor = (): ((
     }, expected);
 
     try {
-      await action();
+      const message = await action();
+      cancel();
+      if (message) {
+        enqueueSnackbar(message, { variant });
+      }
     } catch (error) {
+      cancel();
       enqueueSnackbar(error.toString(), {
         variant: 'error',
         persist: true,
@@ -98,8 +119,6 @@ export const useActionExecutor = (): ((
             React.createElement(Close),
           ),
       });
-    } finally {
-      cancel();
     }
   };
 };
