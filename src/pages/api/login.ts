@@ -12,6 +12,7 @@ const O_AUTH_SCOPES: string[] = [
   'user-modify-playback-state',
   'playlist-modify-public',
   'playlist-modify-private',
+  'streaming',
 ];
 
 /**

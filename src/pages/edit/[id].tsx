@@ -7,10 +7,11 @@ import User from 'components/User';
 import { useActionExecutor } from 'components/utils';
 import HttpStatus from 'http-status-codes';
 import { GetServerSideProps, NextPage } from 'next';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { basicConverter } from 'server/firebase';
 import { firestore, getUser, verifySession } from 'server/firebase-admin';
 import { PlaylistInfo, UserInfo } from 'server/models';
+import { signIn } from 'server/spotify-api';
 
 /**
  * Allows the user to edit their playlist.
@@ -18,13 +19,16 @@ import { PlaylistInfo, UserInfo } from 'server/models';
 const EditPage: NextPage<{
   user: UserInfo;
   playlist: PlaylistInfo;
-}> = ({ user, playlist }) => {
+  accessToken: string;
+}> = ({ user, playlist, accessToken }) => {
   const executor = useActionExecutor();
-  const [link] = useState(
-    `${location.protocol}//${location.host}/playlist/${playlist.id}`,
-  );
+  const [link, setLink] = useState<string>();
 
   const textField = React.createRef<HTMLInputElement>();
+
+  useEffect(() => {
+    setLink(`${location.protocol}//${location.host}/playlist/${playlist.id}`);
+  }, []);
 
   return (
     <Title>
@@ -72,7 +76,7 @@ const EditPage: NextPage<{
       <Grid item xs={12} lg={6}>
         <Playlist id={playlist.id} />
       </Grid>
-      <Play playlist={playlist} />
+      <Play playlist={playlist} accessToken={accessToken} />
     </Title>
   );
 };
@@ -81,6 +85,7 @@ export const getServerSideProps: GetServerSideProps<
   {
     user?: UserInfo;
     playlist?: PlaylistInfo;
+    accessToken?: string;
   },
   { id: string }
 > = async ({ req, res, params }) => {
@@ -91,6 +96,7 @@ export const getServerSideProps: GetServerSideProps<
     }
 
     const { uid } = await verifySession(req);
+    const spotifyApi = await signIn(uid);
 
     // fetch playlist
     const playlist = await (
@@ -110,7 +116,9 @@ export const getServerSideProps: GetServerSideProps<
 
     const user = await getUser(uid);
 
-    return { props: { user, playlist } };
+    return {
+      props: { user, playlist, accessToken: spotifyApi.getAccessToken() },
+    };
   } catch (error) {
     res.writeHead(HttpStatus.MOVED_TEMPORARILY, { Location: '/' }).end();
     return { props: {} };
