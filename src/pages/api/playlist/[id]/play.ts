@@ -1,14 +1,14 @@
 import HttpStatus from 'http-status-codes';
 import { sample } from 'lodash';
+import { PlaylistInfo } from 'models';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Observable } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
-import { basicConverter } from 'server/firebase';
 import { firestore } from 'server/firebase-admin';
-import { PlaylistInfo } from 'server/models';
 import { signIn } from 'server/spotify-api';
-import { asString, sleep } from 'server/utils';
+import { asString } from 'server/utils';
 import SpotifyWebApi from 'spotify-web-api-node';
+import { basicConverter, sleep } from 'utils';
 
 /**
  * Returns a new observable for document snapshots.

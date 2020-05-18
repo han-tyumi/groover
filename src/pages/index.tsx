@@ -4,9 +4,9 @@ import Playlists from 'components/playlist/Playlists';
 import Title from 'components/Title';
 import User from 'components/User';
 import { fetchJson } from 'components/utils';
+import { PlaylistInfo, UserInfo } from 'models';
 import { GetServerSideProps, NextPage } from 'next';
 import { getUser, verifySession } from 'server/firebase-admin';
-import { PlaylistInfo, UserInfo } from 'server/models';
 
 const IndexPage: NextPage<{
   user?: UserInfo;

@@ -2,7 +2,7 @@ import admin from 'firebase-admin';
 import { IncomingMessage } from 'http';
 import { NextApiRequest } from 'next';
 import { parseCookies } from 'nookies';
-import { UserInfo } from './models';
+import { UserInfo } from '../models';
 
 const firebaseAdmin = !admin.apps.length
   ? admin.initializeApp({

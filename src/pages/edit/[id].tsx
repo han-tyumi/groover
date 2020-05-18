@@ -6,12 +6,12 @@ import Title from 'components/Title';
 import User from 'components/User';
 import { useActionExecutor } from 'components/utils';
 import HttpStatus from 'http-status-codes';
+import { PlaylistInfo, UserInfo } from 'models';
 import { GetServerSideProps, NextPage } from 'next';
-import React, { useEffect, useState } from 'react';
-import { basicConverter } from 'server/firebase';
+import { useEffect, useRef, useState } from 'react';
 import { firestore, getUser, verifySession } from 'server/firebase-admin';
-import { PlaylistInfo, UserInfo } from 'server/models';
 import { signIn } from 'server/spotify-api';
+import { basicConverter } from 'utils';
 
 /**
  * Allows the user to edit their playlist.
@@ -23,8 +23,7 @@ const EditPage: NextPage<{
 }> = ({ user, playlist, accessToken }) => {
   const executor = useActionExecutor();
   const [link, setLink] = useState<string>();
-
-  const textField = React.createRef<HTMLInputElement>();
+  const textField = useRef<HTMLInputElement>();
 
   useEffect(() => {
     setLink(`${location.protocol}//${location.host}/playlist/${playlist.id}`);

@@ -6,7 +6,7 @@ import {
 } from 'components/utils';
 import firebase from 'firebase';
 import MaterialTable, { Action } from 'material-table';
-import { createRef } from 'react';
+import { useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useFirestore, useFirestoreConnect } from 'react-redux-firebase';
 import { RootState } from 'store/rootReducer';
@@ -29,8 +29,7 @@ const Playlist: React.FunctionComponent<{ id: string; readonly?: boolean }> = ({
   );
   const firestore = useFirestore();
   const executor = useActionExecutor();
-
-  const tableRef = createRef<MaterialTable<TrackTableData>>();
+  const tableRef = useRef<MaterialTable<TrackTableData>>();
 
   const removeAction: Action<TrackTableData> = {
     tooltip: 'Remove',

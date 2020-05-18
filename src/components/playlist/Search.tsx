@@ -7,7 +7,7 @@ import {
 } from 'components/utils';
 import firebase from 'firebase';
 import MaterialTable, { Action, QueryResult } from 'material-table';
-import { createRef } from 'react';
+import { useRef } from 'react';
 import { useFirestore } from 'react-redux-firebase';
 import { actionIcon, icons, trackColumns, TrackTableData } from './models';
 
@@ -18,8 +18,7 @@ import { actionIcon, icons, trackColumns, TrackTableData } from './models';
 const Search: React.FunctionComponent<{ id: string }> = ({ id }) => {
   const firestore = useFirestore();
   const executor = useActionExecutor();
-
-  const tableRef = createRef<MaterialTable<TrackTableData>>();
+  const tableRef = useRef<MaterialTable<TrackTableData>>();
 
   const addAction: Action<TrackTableData> = {
     tooltip: 'Add',

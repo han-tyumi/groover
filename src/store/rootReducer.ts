@@ -1,7 +1,7 @@
 import { combineReducers, Reducer } from '@reduxjs/toolkit';
+import { PlaylistInfo } from 'models';
 import { firebaseReducer, FirestoreReducer } from 'react-redux-firebase';
 import { firestoreReducer } from 'redux-firestore';
-import { PlaylistInfo } from 'server/models';
 import loginReducer from './loginSlice';
 
 interface FirestoreReducer<Schema> extends FirestoreReducer.Reducer {

@@ -1,10 +1,10 @@
 import HttpStatus from 'http-status-codes';
+import { PlaylistInfo } from 'models';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { basicConverter } from 'server/firebase';
 import { firestore } from 'server/firebase-admin';
-import { PlaylistInfo } from 'server/models';
 import { signIn } from 'server/spotify-api';
 import { asString } from 'server/utils';
+import { basicConverter } from 'utils';
 import { playing } from './play';
 
 /**

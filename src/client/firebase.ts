@@ -19,7 +19,7 @@ import store from 'store';
     appId: process.env.FIREBASE_APP_ID,
     measurementId: process.env.FIREBASE_MEASUREMENT_ID,
   });
-firebase.firestore();
+export const db = firebase.firestore();
 
 const rrfConfig: Partial<ReactReduxFirebaseConfig> = {
   useFirestoreForProfile: true,

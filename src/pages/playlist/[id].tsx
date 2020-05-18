@@ -4,10 +4,11 @@ import Search from 'components/playlist/Search';
 import Title from 'components/Title';
 import User from 'components/User';
 import HttpStatus from 'http-status-codes';
+import { PlaylistInfo, UserInfo } from 'models';
 import { GetServerSideProps, NextPage } from 'next';
-import { basicConverter } from 'server/firebase';
 import { firestore, getUser } from 'server/firebase-admin';
-import { PlaylistInfo, UserInfo } from 'server/models';
+import { signIn } from 'server/spotify-api';
+import { basicConverter } from 'utils';
 
 const PlaylistPage: NextPage<{
   user: UserInfo;
@@ -34,12 +35,14 @@ export const getServerSideProps: GetServerSideProps<
     playlist?: PlaylistInfo;
   },
   { id: string }
-> = async ({ res, params }) => {
+> = async ({ req, res, params }) => {
   try {
     const id = params?.id;
     if (!id) {
       throw new Error('Missing ID!');
     }
+
+    await signIn(req);
 
     // fetch playlist
     const playlist = await (

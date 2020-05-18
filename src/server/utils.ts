@@ -67,10 +67,3 @@ export const asBool = (val: QueryValue): boolean => {
  */
 asBool.Array = (val: QueryValue): boolean[] =>
   asString.Array(val).map((v) => asBool(v));
-
-/**
- * Returns a promise that resolves after the given number of milliseconds.
- * @param ms The number of milliseconds.
- */
-export const sleep = (ms: number): Promise<void> =>
-  new Promise((r) => setTimeout(r, ms));

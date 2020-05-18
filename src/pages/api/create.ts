@@ -1,9 +1,9 @@
 import cryptoRandomString from 'crypto-random-string';
 import HttpStatus from 'http-status-codes';
+import { PlaylistInfo } from 'models';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { basicConverter } from 'server/firebase';
 import { firestore, verifySession } from 'server/firebase-admin';
-import { PlaylistInfo } from 'server/models';
+import { basicConverter } from 'utils';
 
 /**
  * Creates a new collaborative playlist for the user.

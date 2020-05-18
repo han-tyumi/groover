@@ -2,7 +2,8 @@ import admin from 'firebase-admin';
 import { IncomingMessage } from 'http';
 import { NextApiRequest } from 'next';
 import SpotifyWebApi from 'spotify-web-api-node';
-import { basicConverter, SpotifyTokens } from './firebase';
+import { basicConverter } from 'utils';
+import { SpotifyTokens } from './firebase';
 import { firestore, verifySession } from './firebase-admin';
 
 const spotifyApi = new SpotifyWebApi({

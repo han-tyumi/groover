@@ -1,6 +1,6 @@
 import { Avatar, Card, CardHeader, Grid, IconButton } from '@material-ui/core';
 import { ExitToApp } from '@material-ui/icons';
-import { UserInfo } from 'server/models';
+import { UserInfo } from 'models';
 
 const User: React.FunctionComponent<{
   user: UserInfo;

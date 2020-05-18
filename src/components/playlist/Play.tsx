@@ -1,8 +1,6 @@
 import { Button, Grid } from '@material-ui/core';
-import { getPlayer } from 'client/web-player';
-import { fetchJson, useActionExecutor } from 'components/utils';
-import { useState } from 'react';
-import { PlaylistInfo } from 'server/models';
+import { usePlayer } from 'client/web-player';
+import { PlaylistInfo } from 'models';
 
 /**
  * Allows the user to start playback for a given playlist.
@@ -11,8 +9,7 @@ const Play: React.FunctionComponent<{
   playlist: PlaylistInfo;
   accessToken: string;
 }> = ({ playlist, accessToken }) => {
-  const [playing, setPlaying] = useState(false);
-  const executor = useActionExecutor();
+  const { player, state } = usePlayer(accessToken, playlist.id);
 
   return (
     <Grid item xs={12}>
@@ -20,29 +17,13 @@ const Play: React.FunctionComponent<{
         variant="contained"
         color="secondary"
         fullWidth
-        onClick={async (): Promise<void> => {
-          const { deviceId } = await getPlayer(accessToken);
-          executor({
-            verb: playing ? 'Pausing' : 'Playing',
-            action: async () => {
-              await fetchJson<{ success: boolean }>(
-                `/api/playlist/${playlist.id}/${playing ? 'pause' : 'play'}`,
-                {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({ deviceId }),
-                },
-              );
-              setPlaying(!playing);
-              return playing ? 'Paused' : 'Playback Started';
-            },
-            variant: 'info',
-          });
-        }}
+        onClick={(): void =>
+          void (state?.paused !== false
+            ? player?.play()
+            : player?.player.pause())
+        }
       >
-        {playing ? 'Pause' : 'Play'}
+        {state?.paused !== false ? 'Play' : 'Pause'}
       </Button>
     </Grid>
   );

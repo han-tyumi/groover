@@ -1,15 +1,111 @@
-export type WebPlayer = { player: Spotify.SpotifyPlayer; deviceId: string };
+import { fetchJson } from 'components/utils';
+import { sample } from 'lodash';
+import { PlaylistInfo } from 'models';
+import { useEffect, useState } from 'react';
+import { Observable } from 'rxjs';
+import { basicConverter, fromDoc, sleep } from 'utils';
+import { db } from './firebase';
 
-let webPlayer: WebPlayer;
+/**
+ * Wrapper around the Spotify Web Player.
+ */
+export class Player {
+  /** Observable for playback state. */
+  readonly state$ = new Observable<Spotify.PlaybackState>((subscriber) => {
+    const callback = (s: Spotify.PlaybackState): void => subscriber.next(s);
+    this.player.addListener('player_state_changed', callback);
+    return (): void =>
+      this.player.removeListener('player_state_changed', callback);
+  });
+
+  /** The tracks to be played. */
+  private tracks: SpotifyApi.TrackObjectFull[] = [];
+
+  /** The current playback state. */
+  private state: Spotify.PlaybackState | null = null;
+
+  /** Whether the player is currently in the process of playing the playlist. */
+  private playing = false;
+
+  /**
+   * @param player The Spotify Web Player.
+   * @param deviceId The Spotify Web Player's device ID.
+   * @param playlistId The playlist to play's ID.
+   */
+  constructor(
+    readonly player: Spotify.SpotifyPlayer,
+    readonly deviceId: string,
+    readonly playlistId: string,
+  ) {}
+
+  /**
+   * Starts playing the tracks at random in the playlist.
+   * Will resume playback if playback was already started.
+   */
+  async play(): Promise<void> {
+    // resume playback if playback previously started
+    if (this.playing) {
+      this.player.resume();
+      return;
+    }
+
+    // get playlist document
+    const playlist = db
+      .collection('playlist')
+      .doc(this.playlistId)
+      .withConverter(basicConverter<PlaylistInfo>());
+
+    try {
+      // watch tracks
+      this.tracks = await (await playlist.get()).get('tracks');
+      fromDoc(playlist).subscribe(
+        (playlist) =>
+          (this.tracks = playlist.get(
+            'tracks',
+          ) as SpotifyApi.TrackObjectFull[]),
+      );
+
+      // watch state
+      this.state$.subscribe((state) => (this.state = state));
+
+      // enter track playback loop
+      while (this.tracks.length) {
+        // pick next track randomly
+        const next = sample(this.tracks) as SpotifyApi.TrackObjectFull;
+
+        // remove and start playing track
+        await Promise.all([
+          playlist.update({
+            tracks: this.tracks.filter((t) => t.id !== next.id),
+          }),
+          fetchJson(`/api/play/${this.deviceId}/${next.uri}`),
+        ]);
+        this.playing = true;
+
+        // wait until track has become previous track
+        while (this.state?.track_window.previous_tracks[0]?.id !== next.id) {
+          await sleep(0);
+        }
+      }
+    } finally {
+      this.playing = false;
+    }
+  }
+}
+
+let player: Player;
 
 /**
  * @param accessToken The user's Spotify access token.
  * @returns An object containing the Spotify Web Player and device ID.
  */
-export const getPlayer = (accessToken?: string): Promise<WebPlayer> => {
+export const getPlayer = async (
+  accessToken: string,
+  playlistId: string,
+): Promise<Player> => {
   // return already initialized player
-  if (webPlayer) {
-    return Promise.resolve(webPlayer);
+  if (player) {
+    return player;
   }
 
   // require access token if uninitialized
@@ -18,25 +114,25 @@ export const getPlayer = (accessToken?: string): Promise<WebPlayer> => {
   }
 
   // create promise resolved with player once ready
-  const promise = new Promise<WebPlayer>((resolve, reject) => {
+  const promise = new Promise<Player>((resolve, reject) => {
     window.onSpotifyWebPlaybackSDKReady = (): void => {
       // create player
-      const player = new Spotify.Player({
+      const p = new Spotify.Player({
         name: 'Groover',
         getOAuthToken: (cb): void => cb(accessToken),
       });
 
       // reject on errors
-      player.addListener('initialization_error', reject);
-      player.addListener('authentication_error', reject);
-      player.addListener('account_error', reject);
+      p.addListener('initialization_error', reject);
+      p.addListener('authentication_error', reject);
+      p.addListener('account_error', reject);
 
       // connect and resolve when ready
-      player.addListener('ready', ({ device_id: deviceId }) => {
-        webPlayer = { player, deviceId };
-        resolve(webPlayer);
+      p.addListener('ready', ({ device_id: deviceId }) => {
+        player = new Player(p, deviceId, playlistId);
+        resolve(player);
       });
-      player.connect();
+      p.connect();
     };
   });
 
@@ -46,4 +142,27 @@ export const getPlayer = (accessToken?: string): Promise<WebPlayer> => {
   document.body.append(script);
 
   return promise;
+};
+
+/**
+ * Plays the specified playlist within a web player.
+ * @param accessToken The user's access token.
+ * @param playlistId The playlist to play's ID.
+ */
+export const usePlayer = (
+  accessToken: string,
+  playlistId: string,
+): { player?: Player; state?: Spotify.PlaybackState } => {
+  const [player, setPlayer] = useState<Player>();
+  const [state, setState] = useState<Spotify.PlaybackState>();
+
+  useEffect(() => {
+    (async (): Promise<void> => {
+      const player = await getPlayer(accessToken, playlistId);
+      setPlayer(player);
+      player.state$.subscribe((s) => setState(s));
+    })();
+  }, []);
+
+  return { player, state };
 };
