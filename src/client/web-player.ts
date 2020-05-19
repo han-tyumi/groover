@@ -8,6 +8,8 @@ import { db } from './firebase';
 
 /**
  * Wrapper around the Spotify Web Player.
+ * @todo Move functionality to hook to better support state.
+ * Optionally, firestore or redux.
  */
 export class Player {
   /** Observable for playback state. */
@@ -23,6 +25,9 @@ export class Player {
 
   /** Whether the player is currently in the process of playing the playlist. */
   private playing = false;
+
+  /** Whether the player is currently waiting for the current track to finish. */
+  private waiting = false;
 
   /** The tracks to be played. */
   private tracks: SpotifyApi.TrackObjectFull[] = [];
@@ -92,12 +97,23 @@ export class Player {
         this._current = next;
 
         // wait until track has become previous track
+        this.waiting = true;
         while (this.state?.track_window.previous_tracks[0]?.id !== next.id) {
           await sleep(0);
         }
+        this.waiting = false;
       }
     } finally {
       this.playing = false;
+    }
+  }
+
+  /**
+   * Skip to the next track.
+   */
+  next(): void {
+    if (this.waiting) {
+      this.player.nextTrack();
     }
   }
 }

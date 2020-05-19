@@ -15,10 +15,12 @@ const useStyles = makeStyles((theme) =>
   createStyles({
     root: {
       display: 'flex',
-      justifyContent: 'space-around',
       alignItems: 'center',
     },
     controls: {
+      display: 'flex',
+      justifyContent: 'center',
+      flex: 1,
       margin: theme.spacing(2),
     },
   }),
@@ -67,9 +69,11 @@ const Play: React.FunctionComponent<{
               <Pause fontSize="large" />
             )}
           </IconButton>
-          <IconButton onClick={(): void => void player?.player.nextTrack()}>
-            <SkipNext />
-          </IconButton>
+          {player?.current && (
+            <IconButton onClick={(): void => void player?.next()}>
+              <SkipNext />
+            </IconButton>
+          )}
         </div>
       </Card>
     </Grid>
