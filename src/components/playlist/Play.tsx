@@ -33,13 +33,13 @@ const Play: React.FunctionComponent<{
   playlist: PlaylistInfo;
   accessToken: string;
 }> = ({ playlist, accessToken }) => {
-  const { player, state } = usePlayer(accessToken, playlist.id);
+  const player = usePlayer(accessToken, playlist.id);
   const classes = useStyles();
 
   return (
     <Grid item xs={12}>
       <Card className={classes.root}>
-        {player?.current && (
+        {player.current && (
           <CardHeader
             avatar={
               <Avatar
@@ -58,19 +58,19 @@ const Play: React.FunctionComponent<{
         <div className={classes.controls}>
           <IconButton
             onClick={(): void =>
-              void (state?.paused !== false
-                ? player?.play()
-                : player?.player.pause())
+              void (player.state?.paused !== false
+                ? player.play()
+                : player.pause())
             }
           >
-            {state?.paused !== false ? (
+            {player.state?.paused !== false ? (
               <PlayArrow fontSize="large" />
             ) : (
               <Pause fontSize="large" />
             )}
           </IconButton>
-          {player?.current && (
-            <IconButton onClick={(): void => void player?.next()}>
+          {player.current && (
+            <IconButton onClick={(): void => void player.next()}>
               <SkipNext />
             </IconButton>
           )}
