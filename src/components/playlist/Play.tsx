@@ -1,6 +1,28 @@
-import { Button, Grid } from '@material-ui/core';
+import {
+  Avatar,
+  Card,
+  CardHeader,
+  createStyles,
+  Grid,
+  IconButton,
+  makeStyles,
+} from '@material-ui/core';
+import { Pause, PlayArrow, SkipNext } from '@material-ui/icons';
 import { usePlayer } from 'client/web-player';
 import { PlaylistInfo } from 'models';
+
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    root: {
+      display: 'flex',
+      justifyContent: 'space-around',
+      alignItems: 'center',
+    },
+    controls: {
+      margin: theme.spacing(2),
+    },
+  }),
+);
 
 /**
  * Allows the user to start playback for a given playlist.
@@ -10,21 +32,46 @@ const Play: React.FunctionComponent<{
   accessToken: string;
 }> = ({ playlist, accessToken }) => {
   const { player, state } = usePlayer(accessToken, playlist.id);
+  const classes = useStyles();
 
   return (
     <Grid item xs={12}>
-      <Button
-        variant="contained"
-        color="secondary"
-        fullWidth
-        onClick={(): void =>
-          void (state?.paused !== false
-            ? player?.play()
-            : player?.player.pause())
-        }
-      >
-        {state?.paused !== false ? 'Play' : 'Pause'}
-      </Button>
+      <Card className={classes.root}>
+        {player?.current && (
+          <CardHeader
+            avatar={
+              <Avatar
+                component="a"
+                variant="rounded"
+                src={player.current.album.images[0].url}
+                href={player.current.album.external_urls.spotify}
+              />
+            }
+            title={player.current.name}
+            subheader={`${player.current.artists
+              .map((a) => a.name)
+              .join(', ')} · ${player.current.album.name}`}
+          />
+        )}
+        <div className={classes.controls}>
+          <IconButton
+            onClick={(): void =>
+              void (state?.paused !== false
+                ? player?.play()
+                : player?.player.pause())
+            }
+          >
+            {state?.paused !== false ? (
+              <PlayArrow fontSize="large" />
+            ) : (
+              <Pause fontSize="large" />
+            )}
+          </IconButton>
+          <IconButton onClick={(): void => void player?.player.nextTrack()}>
+            <SkipNext />
+          </IconButton>
+        </div>
+      </Card>
     </Grid>
   );
 };

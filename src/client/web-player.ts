@@ -1,4 +1,4 @@
-import { fetchJson } from 'components/utils';
+import fetch from 'isomorphic-unfetch';
 import { sample } from 'lodash';
 import { PlaylistInfo } from 'models';
 import { useEffect, useState } from 'react';
@@ -18,14 +18,22 @@ export class Player {
       this.player.removeListener('player_state_changed', callback);
   });
 
-  /** The tracks to be played. */
-  private tracks: SpotifyApi.TrackObjectFull[] = [];
-
   /** The current playback state. */
   private state: Spotify.PlaybackState | null = null;
 
   /** Whether the player is currently in the process of playing the playlist. */
   private playing = false;
+
+  /** The tracks to be played. */
+  private tracks: SpotifyApi.TrackObjectFull[] = [];
+
+  /** The currently playing track. */
+  private _current?: SpotifyApi.TrackObjectFull;
+
+  /** Gets the currently playing track. */
+  get current(): SpotifyApi.TrackObjectFull | undefined {
+    return this._current;
+  }
 
   /**
    * @param player The Spotify Web Player.
@@ -78,9 +86,10 @@ export class Player {
           playlist.update({
             tracks: this.tracks.filter((t) => t.id !== next.id),
           }),
-          fetchJson(`/api/play/${this.deviceId}/${next.uri}`),
+          fetch(`/api/play/${this.deviceId}/${next.uri}`),
         ]);
         this.playing = true;
+        this._current = next;
 
         // wait until track has become previous track
         while (this.state?.track_window.previous_tracks[0]?.id !== next.id) {
@@ -93,6 +102,7 @@ export class Player {
   }
 }
 
+/** @todo This can probably be removed in favor of a singleton. */
 let player: Player;
 
 /**
