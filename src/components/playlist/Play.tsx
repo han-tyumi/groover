@@ -2,6 +2,8 @@ import {
   Avatar,
   Button,
   Card,
+  CardActions,
+  CardContent,
   CardHeader,
   createStyles,
   Grid,
@@ -11,6 +13,7 @@ import {
 import { Pause, PlayArrow, SkipNext } from '@material-ui/icons';
 import { usePlayer } from 'client/web-player';
 import { PlaylistInfo } from 'models';
+import { formatMs } from 'utils';
 
 const useStyles = makeStyles((theme) =>
   createStyles({
@@ -53,7 +56,11 @@ const Play: React.FunctionComponent<{
               .map((a) => a.name)
               .join(', ')} · ${player.current.album.name}`}
           />
-          <div className={classes.controls}>
+          <CardContent>
+            {formatMs(player.state?.position || 0)} /{' '}
+            {formatMs(player.state?.duration || 0)}
+          </CardContent>
+          <CardActions className={classes.controls}>
             <IconButton
               onClick={
                 player.state?.paused !== false ? player.play : player.pause
@@ -68,7 +75,7 @@ const Play: React.FunctionComponent<{
             <IconButton disabled={!player.tracks?.length} onClick={player.next}>
               <SkipNext />
             </IconButton>
-          </div>
+          </CardActions>
         </Card>
       ) : (
         <Button

@@ -35,3 +35,30 @@ export const basicConverter = <T>(): FirebaseFirestore.FirestoreDataConverter<
  */
 export const sleep = (ms: number): Promise<void> =>
   new Promise((r) => setTimeout(r, ms));
+
+/**
+ * @param targetLength The target length of the resulting string.
+ * @param n The number to pad with zeros.
+ * @returns The number padded with zeros in order to meet the target length.
+ */
+export const padNumber = (targetLength: number, n: number): string =>
+  n.toString().padStart(targetLength, '0');
+
+/**
+ * @param ms The milliseconds to format.
+ * @returns The given milliseconds formatted in days, hours, minutes, and seconds.
+ */
+export const formatMs = (ms: number): string => {
+  let time = '';
+
+  const s = padNumber(2, Math.floor((ms / 1000) % 60));
+  const m = padNumber(2, Math.floor((ms / (1000 * 60)) % 60));
+  const h = Math.floor((ms / (1000 * 60 * 60)) % 24);
+  const d = Math.floor((ms / (1000 * 60 * 60 * 24)) % 365);
+
+  if (d > 0) time += `${d}:`;
+  if (h > 0) time += `${padNumber(2, h)}:`;
+  time += `${m}:${s}`;
+
+  return time;
+};

@@ -1,3 +1,4 @@
+import { useActionExecutor } from 'components/utils';
 import fetch from 'isomorphic-unfetch';
 import { sample } from 'lodash';
 import { useCallback, useEffect, useState } from 'react';
@@ -77,7 +78,7 @@ interface PlayerState {
    * Starts playing the tracks at random in the playlist.
    * Will resume playback if playback was already started.
    */
-  play: () => void;
+  play: () => Promise<void>;
 
   /**
    * Pause playback.
@@ -95,16 +96,22 @@ interface PlayerState {
  * @param accessToken The user's access token.
  * @param playlistId The playlist to play's ID.
  */
-export function usePlayer(
+export const usePlayer = (
   accessToken: string,
   playlistId: string,
-): PlayerState {
+): PlayerState => {
   const [deviceId, setDeviceId] = useState<string>();
   const [player, setPlayer] = useState<Spotify.SpotifyPlayer>();
   const [state, setState] = useState<Spotify.PlaybackState>();
   const [current, setCurrent] = useState<SpotifyApi.TrackObjectFull>();
   const [playing, setPlaying] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [stateInterval, setStateInterval] = useState<number>();
+  const [stateCallback, setStateCallback] = useState<
+    (s: Spotify.PlaybackState) => void
+  >();
+
+  const executor = useActionExecutor();
 
   useFirestoreConnect({
     collection: 'playlist',
@@ -115,22 +122,20 @@ export function usePlayer(
   );
   const firestore = useFirestore();
 
-  // effect to setup the player and listen for state changes
-  useEffect(() => {
-    const cb = (s: Spotify.PlaybackState): void => setState(s);
+  // cleanup the player when unmounting
+  useEffect(
+    () => (): void => {
+      if (player) {
+        player.removeListener('player_state_changed', stateCallback);
+        player.disconnect();
+      }
 
-    (async (): Promise<void> => {
-      const { player, deviceId } = await getPlayer(accessToken);
-      setDeviceId(deviceId);
-      setPlayer(player);
-      player.addListener('player_state_changed', cb);
-    })();
-
-    return (): void => {
-      player?.removeListener('player_state_changed', cb);
-      player?.disconnect();
-    };
-  }, []);
+      if (stateInterval) {
+        window.clearInterval(stateInterval);
+      }
+    },
+    [],
+  );
 
   const next = useCallback(async () => {
     // don't switch if already busy or we are not playing
@@ -151,15 +156,21 @@ export function usePlayer(
     const next = sample(tracks) as SpotifyApi.TrackObjectFull;
 
     // remove and start playing track
-    await Promise.all([
-      firestore
-        .collection('playlist')
-        .doc(playlistId)
-        .update({
-          tracks: tracks?.filter((t) => t.id !== next.id),
-        }),
-      fetch(`/api/play/${deviceId}/${next.uri}`),
-    ]);
+    await executor({
+      verb: 'Playing',
+      action: async () => {
+        await Promise.all([
+          firestore
+            .collection('playlist')
+            .doc(playlistId)
+            .update({
+              tracks: tracks.filter((t) => t.id !== next.id),
+            }),
+          fetch(`/api/play/${deviceId}/${next.uri}`),
+        ]);
+      },
+    });
+
     setCurrent(next);
     setBusy(false);
   }, [busy, playing, tracks]);
@@ -173,27 +184,46 @@ export function usePlayer(
     }
   }, [playing]);
 
-  // watches for changes in playback state in order to start playing the next
-  // track when necessary
+  // watches for changes in playback state
   useEffect(() => {
-    if (
-      playing &&
-      !busy &&
-      state?.track_window.previous_tracks[0]?.id === current?.id
-    ) {
+    // start playing next track if played
+    if (state?.track_window.previous_tracks[0]?.id === current?.id) {
       next();
+    }
+
+    // watch state more closely while playing
+    if (player && !stateInterval && state?.paused === false) {
+      setStateInterval(
+        window.setInterval(
+          async () => setState((await player.getCurrentState()) || undefined),
+          1000,
+        ),
+      );
+    } else if (stateInterval && state?.paused !== false) {
+      window.clearInterval(stateInterval);
+      setStateInterval(undefined);
     }
   }, [state]);
 
-  const play = useCallback(() => {
+  const play = useCallback(async () => {
     // require player to be defined
     if (!player) {
-      return;
-    }
-
-    // resume playback if playback previously started
-    if (playing) {
-      player.resume();
+      await executor({
+        verb: 'Setting up web player',
+        action: async () => {
+          const { player, deviceId } = await getPlayer(accessToken);
+          setDeviceId(deviceId);
+          setPlayer(player);
+          const cb = (s: Spotify.PlaybackState): void => setState(s);
+          player.addListener('player_state_changed', cb);
+          setStateCallback(cb);
+        },
+      });
+    } else if (playing) {
+      executor({
+        verb: 'Resuming',
+        action: async () => void (await player.resume()),
+      });
       return;
     }
 
@@ -202,7 +232,10 @@ export function usePlayer(
   }, [player, playing]);
 
   const pause = (): void => {
-    player?.pause();
+    executor({
+      verb: 'Pausing',
+      action: async () => void (await player?.pause()),
+    });
   };
 
   return {
@@ -215,4 +248,4 @@ export function usePlayer(
     pause,
     next,
   };
-}
+};
