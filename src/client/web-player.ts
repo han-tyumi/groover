@@ -1,6 +1,6 @@
 import fetch from 'isomorphic-unfetch';
 import { sample } from 'lodash';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useFirestore, useFirestoreConnect } from 'react-redux-firebase';
 import { RootState } from 'store/rootReducer';
@@ -64,6 +64,9 @@ interface PlayerState {
   /** The currently playing track. */
   current?: SpotifyApi.TrackObjectFull;
 
+  /** The tracks currently in the playlist. */
+  tracks?: SpotifyApi.TrackObjectFull[];
+
   /** Whether the player is currently in the process of playing the playlist. */
   playing: boolean;
 
@@ -74,7 +77,7 @@ interface PlayerState {
    * Starts playing the tracks at random in the playlist.
    * Will resume playback if playback was already started.
    */
-  play: () => Promise<void>;
+  play: () => void;
 
   /**
    * Pause playback.
@@ -84,7 +87,7 @@ interface PlayerState {
   /**
    * Skip to the next track.
    */
-  next: () => void;
+  next: () => Promise<void>;
 }
 
 /**
@@ -112,16 +115,24 @@ export function usePlayer(
   );
   const firestore = useFirestore();
 
+  // effect to setup the player and listen for state changes
   useEffect(() => {
+    const cb = (s: Spotify.PlaybackState): void => setState(s);
+
     (async (): Promise<void> => {
       const { player, deviceId } = await getPlayer(accessToken);
       setDeviceId(deviceId);
       setPlayer(player);
-      player.addListener('player_state_changed', (s) => setState(s));
+      player.addListener('player_state_changed', cb);
     })();
+
+    return (): void => {
+      player?.removeListener('player_state_changed', cb);
+      player?.disconnect();
+    };
   }, []);
 
-  async function next(): Promise<void> {
+  const next = useCallback(async () => {
     // don't switch if already busy or we are not playing
     if (busy || !playing) {
       return;
@@ -130,6 +141,7 @@ export function usePlayer(
     // stop playing if we have run out of tracks
     if (!tracks?.length) {
       setPlaying(false);
+      return;
     }
 
     // set player busy while switching tracks
@@ -150,7 +162,16 @@ export function usePlayer(
     ]);
     setCurrent(next);
     setBusy(false);
-  }
+  }, [busy, playing, tracks]);
+
+  // play next song when playback has started, otherwise reset current track
+  useEffect(() => {
+    if (playing) {
+      next();
+    } else {
+      setCurrent(undefined);
+    }
+  }, [playing]);
 
   // watches for changes in playback state in order to start playing the next
   // track when necessary
@@ -164,7 +185,7 @@ export function usePlayer(
     }
   }, [state]);
 
-  async function play(): Promise<void> {
+  const play = useCallback(() => {
     // require player to be defined
     if (!player) {
       return;
@@ -178,16 +199,16 @@ export function usePlayer(
 
     // start playing
     setPlaying(true);
-    next();
-  }
+  }, [player, playing]);
 
-  async function pause(): Promise<void> {
+  const pause = (): void => {
     player?.pause();
-  }
+  };
 
   return {
     state,
     current,
+    tracks,
     playing,
     busy,
     play,

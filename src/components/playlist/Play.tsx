@@ -1,5 +1,6 @@
 import {
   Avatar,
+  Button,
   Card,
   CardHeader,
   createStyles,
@@ -15,12 +16,10 @@ const useStyles = makeStyles((theme) =>
   createStyles({
     root: {
       display: 'flex',
+      justifyContent: 'space-between',
       alignItems: 'center',
     },
     controls: {
-      display: 'flex',
-      justifyContent: 'center',
-      flex: 1,
       margin: theme.spacing(2),
     },
   }),
@@ -38,8 +37,8 @@ const Play: React.FunctionComponent<{
 
   return (
     <Grid item xs={12}>
-      <Card className={classes.root}>
-        {player.current && (
+      {player.current ? (
+        <Card className={classes.root}>
           <CardHeader
             avatar={
               <Avatar
@@ -54,28 +53,34 @@ const Play: React.FunctionComponent<{
               .map((a) => a.name)
               .join(', ')} · ${player.current.album.name}`}
           />
-        )}
-        <div className={classes.controls}>
-          <IconButton
-            onClick={(): void =>
-              void (player.state?.paused !== false
-                ? player.play()
-                : player.pause())
-            }
-          >
-            {player.state?.paused !== false ? (
-              <PlayArrow fontSize="large" />
-            ) : (
-              <Pause fontSize="large" />
-            )}
-          </IconButton>
-          {player.current && (
-            <IconButton onClick={(): void => void player.next()}>
+          <div className={classes.controls}>
+            <IconButton
+              onClick={
+                player.state?.paused !== false ? player.play : player.pause
+              }
+            >
+              {player.state?.paused !== false ? (
+                <PlayArrow fontSize="large" />
+              ) : (
+                <Pause fontSize="large" />
+              )}
+            </IconButton>
+            <IconButton disabled={!player.tracks?.length} onClick={player.next}>
               <SkipNext />
             </IconButton>
-          )}
-        </div>
-      </Card>
+          </div>
+        </Card>
+      ) : (
+        <Button
+          variant="contained"
+          color="secondary"
+          fullWidth
+          disabled={!player.tracks?.length}
+          onClick={player.play}
+        >
+          Play
+        </Button>
+      )}
     </Grid>
   );
 };
